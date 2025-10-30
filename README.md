@@ -78,7 +78,16 @@ Aplikasi web untuk manajemen klinik/puskesmas berbasis Laravel 12 dengan integra
 - 📊 **Dashboard & Laporan** - Statistik kunjungan, export Excel
 - 👥 **Role-based Access** - Admin, Dokter, Petugas Lab, Apoteker, Petugas Pendaftaran
 
-## 📋 Prasyarat
+## � Dokumentasi Teknis
+
+Untuk memahami arsitektur sistem dan struktur database:
+
+- 📊 **[ERD (Entity Relationship Diagram)](docs/ERD.md)** - Skema database lengkap dengan relasi antar tabel
+- 🔄 **[DFD (Data Flow Diagram)](docs/DFD.md)** - Alur data dan proses sistem
+- 📖 **[Optimasi Performa](docs/OPTIMASI-PERFORMA.md)** - Panduan caching dan optimasi
+- 🤝 **[Cara Sharing Project](SHARING.md)** - Panduan berbagi project dengan tim
+
+## �📋 Prasyarat
 
 - **PHP** 8.2 atau lebih tinggi
 - **Composer** 2.x
