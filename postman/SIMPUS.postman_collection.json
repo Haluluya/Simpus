@@ -1,0 +1,275 @@
+{
+  "info": {
+    "_postman_id": "fe4d0a1b-4a1e-4c1f-9f30-7fd508c4532a",
+    "name": "SIMPUS Prototype",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Sample requests for SIMPUS prototype covering auth, patients, BPJS, SATUSEHAT and reporting."
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@simpus.test\",\n  \"password\": \"password\",\n  \"remember\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Patients",
+      "item": [
+        {
+          "name": "List Patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/html"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/patients?search=andi",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "patients"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "andi"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nik\": \"3273010101010001\",\n  \"bpjs_card_no\": \"0001112223334\",\n  \"name\": \"Pasien Integrasi\",\n  \"date_of_birth\": \"1990-01-01\",\n  \"gender\": \"male\",\n  \"phone\": \"081234567890\",\n  \"address\": \"Jl. Melati No. 10\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/patients",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "patients"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "BPJS",
+      "item": [
+        {
+          "name": "Validasi Peserta BPJS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nik\": \"3273010101010001\",\n  \"service_date\": \"2024-10-01\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/bpjs/cek-peserta",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "bpjs",
+                "cek-peserta"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "SATUSEHAT",
+      "item": [
+        {
+          "name": "Queue Patient Sync",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/satusehat/patient/{{patient_id}}/sync",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "satusehat",
+                "patient",
+                "{{patient_id}}",
+                "sync"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Queue Encounter Sync",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/satusehat/visit/{{visit_id}}/sync",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "satusehat",
+                "visit",
+                "{{visit_id}}",
+                "sync"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Visits Export XLSX",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/reports/visits?format=xlsx&start_date=2024-10-01&end_date=2024-10-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "visits"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "xlsx"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2024-10-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-10-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Add custom pre-request scripting here when needed."
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Add Postman tests here when needed."
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "patient_id",
+      "value": "1"
+    },
+    {
+      "key": "visit_id",
+      "value": "1"
+    }
+  ]
+}

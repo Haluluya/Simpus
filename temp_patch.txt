@@ -1,0 +1,97 @@
+*** Begin Patch
+*** Update File: app/Http/Controllers/PatientController.php
+@@
+-use App\Models\BpjsClaim;
+-use App\Models\Patient;
+-use App\Models\SyncQueue;
++use App\Models\BpjsClaim;
++use App\Models\Patient;
++use App\Models\SyncQueue;
++use App\Support\Audit;
+@@
+-         = Patient::create();
+-
+-        return redirect()
++         = Patient::create();
++
++        Audit::log('patient_created', Patient::class, ->id, [
++            'new' => ->auditablePatientData(),
++        ]);
++
++        return redirect()
+             ->route('patients.show', )
+             ->with('status', 'Pasien berhasil ditambahkan.');
+@@
+-         = ->validatedData(, );
+-        ['updated_by'] = Auth::id();
+-
+-        ->update();
+-
+-        return redirect()
++         = ->validatedData(, );
++        ['updated_by'] = Auth::id();
++
++        ->fill();
++
++         = collect(->getDirty())
++            ->except(['updated_at'])
++            ->map(function (, string ) use () {
++                return [
++                    'old' => ->getOriginal(),
++                    'new' => ,
++                ];
++            })
++            ->toArray();
++
++        ->save();
++
++        if (! empty()) {
++            Audit::log('patient_updated', Patient::class, ->id, );
++        }
++
++        return redirect()
+             ->route('patients.show', )
+             ->with('status', 'Data pasien berhasil diperbarui.');
+@@
+-        ->delete();
+-
+-        return redirect()
++         = ->auditablePatientData();
++
++        ->delete();
++
++        Audit::log('patient_deleted', Patient::class, ->id, null, [
++            'snapshot' => ,
++        ]);
++
++        return redirect()
+             ->route('patients.index')
+             ->with('status', 'Pasien berhasil diarsipkan.');
+@@
+     private function generateMedicalRecordNumber(): string
+     {
+         do {
+              = 'RM'.now('Asia/Jakarta')->format('ymd').strtoupper(Str::random(3));
+         } while (Patient::withTrashed()->where('medical_record_number', )->exists());
+ 
+         return ;
+     }
++
++    private function auditablePatientData(Patient ): array
++    {
++        return ->only([
++            'medical_record_number',
++            'nik',
++            'bpjs_card_no',
++            'name',
++            'date_of_birth',
++            'gender',
++            'phone',
++            'email',
++            'address',
++            'city',
++            'province',
++        ]);
++    }
+ }
+*** End Patch
