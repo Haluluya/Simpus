@@ -1,66 +1,3 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
-
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-
----
 
 # SIMPUS - Sistem Informasi Manajemen Puskesmas
 
@@ -68,113 +5,119 @@ Aplikasi web untuk manajemen klinik/puskesmas berbasis Laravel 12 dengan integra
 
 ## 🎯 Fitur Utama
 
+### Manajemen Klinik
 - 📝 **Pendaftaran Pasien** - Manajemen data pasien dengan No. RM otomatis
-- 🏥 **Kunjungan & EMR** - Electronic Medical Record untuk setiap kunjungan
-- 🔬 **Laboratorium** - Permintaan dan hasil tes lab dengan print report
-- 💊 **Farmasi** - Manajemen resep dan dispensing obat
-- 📋 **Antrean** - Sistem antrian pasien per poli
-- 🔗 **Integrasi BPJS** - Validasi peserta, SEP, rujukan (VClaim REST API)
-- 🔗 **Integrasi SATUSEHAT** - Sinkronisasi data ke SATUSEHAT (FHIR R4)
-- 📊 **Dashboard & Laporan** - Statistik kunjungan, export Excel
-- 👥 **Role-based Access** - Admin, Dokter, Petugas Lab, Apoteker, Petugas Pendaftaran
+- 🏥 **Kunjungan & EMR** - Electronic Medical Record lengkap untuk setiap kunjungan
+- 📋 **Sistem Antrian** - Queue management dengan monitor real-time per poli
+- 🔍 **Pencarian Cerdas** - Search suggestion untuk data pasien dan obat
 
-## 📚 Dokumentasi Teknis
+### Layanan Medis
+- 🔬 **Laboratorium** - Permintaan dan hasil tes lab dengan print report PDF
+- 💊 **Farmasi** - Manajemen resep, dispensing obat, dan master obat
+- 🩺 **Rujukan** - Manajemen rujukan internal dan eksternal
+- 📋 **EMR Notes** - Catatan medis terstruktur per kunjungan
 
-Untuk memahami arsitektur sistem dan struktur database:
+### Integrasi Eksternal
+- 🔗 **Integrasi BPJS VClaim** - Validasi peserta, SEP, rujukan dengan mock mode
+- 🔗 **Integrasi SATUSEHAT** - Sinkronisasi FHIR R4 (Patient, Encounter, Observation) via queue
+- 📊 **BPJS Claims** - Tracking klaim BPJS per kunjungan
 
-- 🏗️ **[System Architecture](docs/ARCHITECTURE.md)** - Overview arsitektur sistem, technology stack, dan integration
-- 📊 **[ERD (Entity Relationship Diagram)](docs/ERD.md)** - Skema database lengkap dengan relasi antar tabel
+### Pelaporan & Monitoring
+- 📊 **Dashboard** - Statistik kunjungan, pasien, dan layanan real-time
+- 📈 **Laporan** - Export laporan ke Excel (kunjungan, lab, farmasi)
+- 📋 **Audit Log** - Tracking aktivitas pengguna sistem
+- 🖥️ **Queue Monitor** - Monitor antrian per poli dengan status real-time
+
+### Manajemen User & Keamanan
+- 👥 **Role-based Access Control** - Admin, Dokter, Petugas Rekam Medis, Pendaftaran, Lab, Apotek
+- 🔐 **Spatie Permission** - Granular permission management
+- 🔒 **Authentication** - Laravel Breeze untuk auth
+
+## 🛠️ Technology Stack
+
+- **Backend**: Laravel 12, PHP 8.2
+- **Database**: MySQL 8.0+ / MariaDB 10.6+
+- **Frontend**: Alpine.js 3, Tailwind CSS 3, Vite 7
+- **Auth**: Laravel Breeze
+- **Permissions**: Spatie Laravel Permission
+- **Queue**: Database driver dengan Redis support
+- **Cache**: Database/Redis
+- **Export**: Maatwebsite Excel, DomPDF
+
+## 📚 Dokumentasi
+
+- 🏗️ **[System Architecture](docs/ARCHITECTURE.md)** - Overview arsitektur sistem dan technology stack
+- 📊 **[ERD (Entity Relationship Diagram)](docs/ERD.md)** - Skema database lengkap dengan relasi
 - 🔄 **[DFD (Data Flow Diagram)](docs/DFD.md)** - Alur data dan proses sistem
 - 📖 **[Optimasi Performa](docs/OPTIMASI-PERFORMA.md)** - Panduan caching dan optimasi
 - 🤝 **[Cara Sharing Project](SHARING.md)** - Panduan berbagi project dengan tim
 
-## �📋 Prasyarat
+## 📋 Requirements
 
-- **PHP** 8.2 atau lebih tinggi
-- **Composer** 2.x
-- **Node.js** 18+ & npm
-- **MySQL** 8.0 / MariaDB 10.6+
-- **Web Server** Apache/Nginx atau Laragon (recommended untuk Windows)
-- **Git** (untuk clone repository)
+- **PHP** >= 8.2.24
+- **Composer** >= 2.x
+- **Node.js** >= 18.x & npm
+- **MySQL** >= 8.0 atau MariaDB >= 10.6
+- **Redis** (optional, untuk queue & cache)
+- **Web Server**: Apache/Nginx atau Laragon (Windows)
+- **Git**
 
-## 🚀 Instalasi & Setup
+## 🚀 Quick Start
 
-### Opsi 1: Setup dengan Laragon (Windows - Recommended)
+### Opsi 1: Auto Setup (Recommended)
 
-1. **Install Laragon**
-   - Download dari [laragon.org](https://laragon.org/)
-   - Pastikan PHP 8.2+, Composer, Node.js, MySQL sudah aktif
+Jalankan satu perintah untuk setup otomatis:
 
-2. **Clone Repository**
-   ```powershell
-   cd D:\laragon\www
-   git clone https://github.com/Haluluya/Simpus.git
-   cd Simpus
-   ```
+```bash
+composer run setup
+```
 
-3. **Setup Environment**
-   ```powershell
-   # Copy file environment
-   Copy-Item .env.example .env
-   
-   # Edit .env - sesuaikan DB_DATABASE, DB_USERNAME, DB_PASSWORD
-   # Notepad .env
-   ```
+Script ini akan:
+- Copy `.env.example` ke `.env`
+- Generate application key
+- Install dependencies (composer & npm)
+- Run migrations & seeders
+- Build frontend assets
 
-4. **Install Dependencies**
-   ```powershell
-   composer install
-   npm install
-   ```
+**Setelah setup**, edit `.env` untuk konfigurasi database Anda, lalu jalankan:
 
-5. **Generate App Key**
-   ```powershell
-   php artisan key:generate
-   ```
+```bash
+php artisan migrate:fresh --seed
+```
 
-6. **Setup Database**
-   ```powershell
-   # Buat database di MySQL (via Laragon → Menu → MySQL → Create Database)
-   # Nama database: simpus
-   
-   # Atau via command line:
-   # mysql -u root -p -e "CREATE DATABASE simpus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-   
-   # Jalankan migration dan seeder
-   php artisan migrate --seed
-   ```
+### Opsi 2: Manual Setup
 
-7. **Create Storage Link**
-   ```powershell
-   php artisan storage:link
-   ```
-
-8. **Build Frontend Assets**
-   ```powershell
-   # Development
-   npm run dev
-   
-   # Production
-   npm run build
-   ```
-
-9. **Akses Aplikasi**
-   - Tambahkan virtual host di Laragon: klik kanan Laragon → Apache → Add Virtual Host
-   - Nama: `simpus.test`
-   - Folder: `D:\laragon\www\Simpus\public`
-   - Buka browser: `http://simpus.test`
-
-### Opsi 2: Setup Manual (Linux/Mac/Windows)
+#### 1. Clone & Setup Environment
 
 ```bash
 # Clone repository
 git clone https://github.com/Haluluya/Simpus.git
 cd Simpus
 
-# Setup environment
+# Copy environment file
 cp .env.example .env
-# Edit .env sesuai kebutuhan
+```
 
+#### 2. Konfigurasi Database
+
+Edit `.env` dan sesuaikan:
+
+```env
+DB_DATABASE=simpus
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Buat database:
+
+```bash
+# MySQL CLI
+mysql -u root -p -e "CREATE DATABASE simpus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+#### 3. Install & Build
+
+```bash
 # Install dependencies
 composer install
 npm install
@@ -182,26 +125,48 @@ npm install
 # Generate app key
 php artisan key:generate
 
-# Setup database
+# Run migrations & seeders
 php artisan migrate --seed
 
 # Storage link
 php artisan storage:link
 
-# Build assets
+# Build frontend assets
 npm run build
+```
 
-# Jalankan server development
+#### 4. Jalankan Aplikasi
+
+**Development Mode** (dengan queue worker, logs, dan hot reload):
+
+```bash
+composer run dev
+```
+
+**Manual Mode**:
+
+```bash
+# Terminal 1: Web server
 php artisan serve
-# Akses: http://localhost:8000
+
+# Terminal 2: Queue worker (optional untuk SATUSEHAT sync)
+php artisan queue:work --queue=default,satusehat
+
+# Terminal 3: Frontend dev server
+npm run dev
 ```
 
-### Opsi 3: Auto Setup Script (PowerShell)
+Akses aplikasi di `http://localhost:8000`
 
-Jalankan script otomatis:
-```powershell
-.\setup.ps1
-```
+### Setup dengan Laragon (Windows)
+
+1. Install [Laragon](https://laragon.org/) dengan PHP 8.2+, Composer, Node.js, MySQL
+2. Clone project ke `D:\laragon\www\Simpus`
+3. Buat virtual host: Klik kanan Laragon → Apache → Add Virtual Host
+   - Nama: `simpus.test`
+   - Folder: `D:\laragon\www\Simpus\public`
+4. Ikuti langkah manual setup di atas
+5. Akses di `http://simpus.test`
 
 ## 👤 Akun Default (Seeder)
 
@@ -216,177 +181,319 @@ Setelah `php artisan migrate --seed`, gunakan akun berikut untuk login:
 | Petugas Apotek | apotik@simpus.test | password123 |
 | Petugas Lab | lab@simpus.test | password123 |
 
-## 🔧 Konfigurasi Integrasi
+## 🔧 Konfigurasi
 
-### BPJS VClaim
+### Environment Variables
+
+Edit `.env` untuk konfigurasi dasar:
+
+```env
+APP_NAME=SIMPUS
+APP_URL=http://localhost
+APP_LOCALE=id
+
+DB_DATABASE=simpus
+DB_USERNAME=root
+DB_PASSWORD=
+
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+```
+
+### Integrasi BPJS VClaim
 
 Edit `.env`:
-```bash
+
+```env
 BPJS_BASE_URL=https://new-api.bpjs-kesehatan.go.id/vclaim-rest/
 BPJS_CONS_ID=your_cons_id
 BPJS_SECRET=your_secret_key
 BPJS_USER_KEY=your_user_key
-BPJS_USE_MOCK=false  # true untuk menggunakan mock data
+BPJS_USE_MOCK=true  # false untuk production
+BPJS_TIMEOUT=10
 ```
 
-**Mock Mode**: Jika kredensial kosong atau `BPJS_USE_MOCK=true`, sistem akan menggunakan data mock dari `storage/app/mocks/bpjs/`.
+**Mock Mode**: Set `BPJS_USE_MOCK=true` untuk testing tanpa kredensial. Data mock tersedia di `storage/app/mocks/bpjs/`.
 
-### SATUSEHAT FHIR
+### Integrasi SATUSEHAT FHIR
 
 Edit `.env`:
-```bash
+
+```env
 SATUSEHAT_BASE_URL=https://api-satusehat.kemkes.go.id/fhir-r4
 SATUSEHAT_AUTH_URL=https://api-satusehat.kemkes.go.id/oauth2/v1
 SATUSEHAT_CLIENT_ID=your_client_id
 SATUSEHAT_CLIENT_SECRET=your_client_secret
 SATUSEHAT_ORGANIZATION_ID=your_org_id
 SATUSEHAT_FACILITY_ID=your_facility_id
-SATUSEHAT_USE_MOCK=false  # true untuk mock
+SATUSEHAT_USE_MOCK=true  # false untuk production
+SATUSEHAT_TIMEOUT=10
 ```
 
-### Queue Worker (untuk sinkronisasi SATUSEHAT)
+**Mock Mode**: Set `SATUSEHAT_USE_MOCK=true` untuk testing. Data mock tersedia di `storage/app/mocks/satusehat/`.
 
-Jalankan queue worker di terminal terpisah:
-```powershell
+### Queue Worker
+
+Queue diperlukan untuk sinkronisasi SATUSEHAT. Jalankan:
+
+```bash
+# Development
 php artisan queue:work --queue=default,satusehat
+
+# Atau gunakan composer run dev (sudah include queue worker)
+composer run dev
 ```
 
-Atau setup dengan Supervisor (production).
+Production setup dengan Supervisor (lihat `deployment/supervisor/simpus-worker.conf`).
 
-## 📦 Perintah Artisan Penting
+## 📦 Useful Commands
 
-```powershell
-# Clear cache
+### Development
+
+```bash
+# Development server dengan queue & hot reload
+composer run dev
+
+# Run specific artisan commands
+php artisan serve              # Start dev server
+php artisan queue:work         # Start queue worker
+npm run dev                    # Vite dev server dengan HMR
+
+# Run tests
+composer run test
+php artisan test --filter=NamaTest
+```
+
+### Cache Management
+
+```bash
+# Clear all cache
 php artisan cache:clear
-php artisan view:clear
 php artisan config:clear
 php artisan route:clear
+php artisan view:clear
 
-# Optimize (production)
+# Production optimization
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
-
-# Run tests
-php artisan test
-
-# Code formatting (Laravel Pint)
-vendor/bin/pint --dirty
+php artisan optimize
 ```
 
-## 🧪 Testing dengan Postman
+### Code Quality
+
+```bash
+# Laravel Pint (code formatter)
+vendor/bin/pint              # Format all files
+vendor/bin/pint --dirty      # Format only changed files
+vendor/bin/pint --test       # Test without formatting
+```
+
+### Database
+
+```bash
+# Fresh migration dengan seeder
+php artisan migrate:fresh --seed
+
+# Rollback
+php artisan migrate:rollback
+
+# Reset database
+php artisan migrate:reset
+```
+
+## 🧪 Testing
+
+### PHPUnit Tests
+
+```bash
+# Run all tests
+php artisan test
+
+# Run specific test
+php artisan test tests/Feature/PatientTest.php
+php artisan test --filter=test_can_create_patient
+
+# With coverage
+php artisan test --coverage
+```
+
+### API Testing dengan Postman
 
 Import collection dari `postman/SIMPUS.postman_collection.json`:
 
-- **Auth** → Login & Logout
-- **Patients** → CRUD pasien
-- **Visits** → Kunjungan & EMR
-- **Lab Orders** → Permintaan lab
-- **BPJS** → Validasi peserta, SEP
-- **SATUSEHAT** → Sync Patient/Encounter
-- **Reports** → Export Excel
-
-## 📖 Dokumentasi Tambahan
-
-- `docs/FITUR-LENGKAP-INTEGRASI.md` - Dokumentasi lengkap fitur & integrasi
-- `docs/TESTING-BPJS-MOCK.md` - Panduan testing Mock API BPJS
-- `docs/STATUS-INTEGRASI-QUICK-REFERENCE.md` - Quick reference status integrasi
-- `docs/OPTIMASI-PERFORMA.md` - Panduan optimasi performa
-- `.github/copilot-instructions.md` - Konvensi project untuk AI assist
+- **Auth**: Login & Logout
+- **Patients**: CRUD pasien
+- **Visits**: Kunjungan & EMR
+- **Lab**: Permintaan dan hasil lab
+- **Pharmacy**: Resep dan dispensing
+- **Queue**: Antrian pasien
+- **BPJS**: Validasi peserta, SEP, rujukan
+- **SATUSEHAT**: Sync Patient/Encounter/Observation
+- **Reports**: Export Excel
 
 ## 🐛 Troubleshooting
 
-### Error: "No application encryption key"
-```powershell
+### No application encryption key
+
+```bash
 php artisan key:generate
 ```
 
-### Error: "SQLSTATE[HY000] [1049] Unknown database"
+### Unknown database
+
 Buat database terlebih dahulu:
-```powershell
-mysql -u root -p -e "CREATE DATABASE simpus;"
+
+```bash
+mysql -u root -p -e "CREATE DATABASE simpus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
 
-### Error: "The stream or file could not be opened"
-```powershell
-# Fix permission (Linux/Mac)
-chmod -R 775 storage bootstrap/cache
+### Permission denied (Linux/Mac)
 
-# Windows - jalankan sebagai Administrator atau pastikan folder writable
+```bash
+chmod -R 775 storage bootstrap/cache
+chown -R $USER:www-data storage bootstrap/cache
 ```
 
 ### Frontend tidak muncul / 404 assets
-```powershell
+
+```bash
 npm run build
 php artisan view:clear
+php artisan optimize:clear
 ```
 
 ### Queue tidak berjalan
-```powershell
-# Pastikan .env menggunakan queue driver
-QUEUE_CONNECTION=database
 
-# Buat table jobs jika belum
+Pastikan konfigurasi queue di `.env`:
+
+```env
+QUEUE_CONNECTION=database
+```
+
+Jalankan migration table jobs jika belum:
+
+```bash
 php artisan queue:table
 php artisan migrate
+```
 
-# Jalankan worker
+Start queue worker:
+
+```bash
 php artisan queue:work --queue=default,satusehat
 ```
 
-## 🚢 Deployment Production
+### BPJS/SATUSEHAT connection timeout
 
-1. **Install dependencies (production)**
-   ```bash
-   composer install --optimize-autoloader --no-dev
-   npm ci
-   npm run build
-   ```
+Aktifkan mock mode untuk testing:
 
-2. **Setup environment**
-   ```bash
-   cp .env.example .env
-   # Edit .env untuk production (APP_ENV=production, APP_DEBUG=false)
-   php artisan key:generate
-   ```
+```env
+BPJS_USE_MOCK=true
+SATUSEHAT_USE_MOCK=true
+```
 
-3. **Database migration**
-   ```bash
-   php artisan migrate --force
-   ```
+## 🚢 Production Deployment
 
-4. **Cache optimization**
-   ```bash
-   php artisan config:cache
-   php artisan route:cache
-   php artisan view:cache
-   ```
+### 1. Install Dependencies
 
-5. **Setup Queue Worker dengan Supervisor**
-   Lihat contoh config di `deployment/supervisor/simpus-worker.conf`
+```bash
+composer install --optimize-autoloader --no-dev
+npm ci
+npm run build
+```
 
-6. **Setup Web Server**
-   - Apache: Lihat `deployment/apache/simpus.conf`
-   - Nginx: Lihat `deployment/nginx/simpus.conf`
+### 2. Environment Setup
 
-## 🤝 Kontribusi & Kolaborasi
+```bash
+cp .env.example .env
+```
 
-Untuk berkolaborasi:
-1. Fork repository ini
-2. Buat branch fitur (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+Edit `.env` untuk production:
+
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://your-domain.com
+
+# Set production database
+DB_DATABASE=simpus_prod
+DB_USERNAME=prod_user
+DB_PASSWORD=secure_password
+
+# Use Redis untuk performa lebih baik
+CACHE_STORE=redis
+QUEUE_CONNECTION=redis
+SESSION_DRIVER=redis
+
+# BPJS & SATUSEHAT credentials
+BPJS_USE_MOCK=false
+SATUSEHAT_USE_MOCK=false
+```
+
+Generate application key:
+
+```bash
+php artisan key:generate --force
+```
+
+### 3. Database Migration
+
+```bash
+php artisan migrate --force --seed
+php artisan storage:link
+```
+
+### 4. Optimization
+
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan optimize
+```
+
+### 5. Queue Worker
+
+Setup Supervisor untuk menjalankan queue worker secara persistent. Lihat contoh config di `deployment/supervisor/simpus-worker.conf`.
+
+### 6. Web Server
+
+Konfigurasi web server:
+- **Apache**: `deployment/apache/simpus.conf`
+- **Nginx**: `deployment/nginx/simpus.conf`
+
+Pastikan document root mengarah ke folder `public/`.
+
+## 🤝 Contributing
+
+Kontribusi sangat diterima! Untuk berkontribusi:
+
+1. Fork repository
+2. Buat feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add: amazing feature'`)
 4. Push ke branch (`git push origin feature/AmazingFeature`)
 5. Buat Pull Request
 
-## 📝 Lisensi
+Pastikan code sudah diformat dengan Laravel Pint dan lolos semua tests:
 
-MIT License - lihat file `LICENSE` untuk detail.
+```bash
+vendor/bin/pint --dirty
+php artisan test
+```
 
-## 📧 Kontak & Support
+## 📝 License
 
-- Repository: [https://github.com/Haluluya/Simpus](https://github.com/Haluluya/Simpus)
-- Issues: [https://github.com/Haluluya/Simpus/issues](https://github.com/Haluluya/Simpus/issues)
+Project ini dilisensikan di bawah [MIT License](LICENSE).
+
+## 📧 Support
+
+- **Repository**: [https://github.com/Haluluya/Simpus](https://github.com/Haluluya/Simpus)
+- **Issues**: [https://github.com/Haluluya/Simpus/issues](https://github.com/Haluluya/Simpus/issues)
+- **Documentation**: [docs/](docs/)
 
 ---
 
-**Catatan untuk Developer Baru**: Pastikan sudah membaca `docs/FITUR-LENGKAP-INTEGRASI.md` dan `.github/copilot-instructions.md` untuk memahami struktur project dan konvensi coding yang digunakan
+**Untuk Developer Baru**:
+- 📖 Baca [System Architecture](docs/ARCHITECTURE.md) untuk memahami struktur sistem
+- 📊 Lihat [ERD](docs/ERD.md) dan [DFD](docs/DFD.md) untuk memahami database dan flow
