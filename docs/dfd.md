@@ -51,7 +51,7 @@ flowchart TB
     %% Data Flows - Patient
     Patient -->|Data Diri, Keluhan| SIMPUS
     SIMPUS -->|Nomor Antrian| Patient
-    SIMPUS -->|Hasil Lab (Print)| Patient
+    SIMPUS -->|Hasil Lab dan Print| Patient
     SIMPUS -->|Resep Obat| Patient
     
     %% Data Flows - BPJS
