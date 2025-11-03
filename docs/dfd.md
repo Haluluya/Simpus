@@ -43,7 +43,7 @@ flowchart TB
     SIMPUS -->|Data Pasien| Lab
     
     %% Data Flows - Pharmacist
-    Pharmacist -->|Status Resep (Proses/Selesai)| SIMPUS
+    Pharmacist -->|Status Resep Proses atau Selesai| SIMPUS
     Pharmacist -->|Update Stok Obat| SIMPUS
     SIMPUS -->|Resep dari Dokter| Pharmacist
     SIMPUS -->|Data Obat| Pharmacist
@@ -57,7 +57,7 @@ flowchart TB
     %% Data Flows - BPJS
     SIMPUS -->|Cek Peserta| BPJS
     SIMPUS -->|Buat SEP| BPJS
-    SIMPUS -->|Update/Hapus SEP| BPJS
+    SIMPUS -->|Update atau Hapus SEP| BPJS
     BPJS -->|Data Peserta| SIMPUS
     BPJS -->|Nomor SEP| SIMPUS
     BPJS -->|Status Klaim| SIMPUS
@@ -119,7 +119,7 @@ flowchart TB
     %% Process 1: Pendaftaran & Antrian
     Receptionist -->|Data Pasien Baru| P1
     Patient -->|Data Diri, Keluhan| P1
-    P1 -->|Simpan/Update Pasien| DS1
+    P1 -->|Simpan atau Update Pasien| DS1
     P1 -->|Buat Kunjungan| DS2
     P1 -->|Generate Nomor Antrian| DS7
     DS1 -->|Cek Data Pasien| P1
@@ -174,7 +174,7 @@ flowchart TB
     P5 -->|Log Interaksi| DS9
     
     %% Process 6: Sinkronisasi SATUSEHAT
-    P1 -->|Pasien Baru/Update| P6
+    P1 -->|Pasien Baru atau Update| P6
     P2 -->|Kunjungan Selesai| P6
     P3 -->|Hasil Lab| P6
     DS1 -->|Data Pasien| P6
@@ -258,7 +258,7 @@ flowchart TB
     %% Flow
     IN1 --> P11
     IN2 --> P11
-    P11 -->|Cek NIK/BPJS| DS1
+    P11 -->|Cek NIK atau BPJS| DS1
     DS1 -->|Data Existing| P11
     
     P11 -->|Pasien Baru| P12
