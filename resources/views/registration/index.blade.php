@@ -5,7 +5,7 @@
                 <h1 class="page-title">{{ __('Pendaftaran & Antrian') }}</h1>
                 <p class="mt-1 text-[13px] text-[#94A3B8]">Kelola pendaftaran pasien dan antrian kunjungan</p>
             </div>
-            <x-button :href="route('patients.create')" icon="plus" class="!h-[52px]">
+            <x-button :href="route('patients.create')" icon="plus" class="!h-[52px] hover:!bg-[#1e3a8a] hover:!text-white">
                 {{ __('Pasien Baru') }}
             </x-button>
         </div>
@@ -131,37 +131,60 @@
                             
                             <h3 class="text-[15px] font-semibold text-[#0F172A] mb-4">Buat Kunjungan Baru</h3>
                             
-                            <div class="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label for="poli" class="text-[14px] font-semibold text-[#0F172A] mb-2 block">POLI TUJUAN</label>
-                                    <select id="poli" name="poli" class="input !h-[44px] !rounded-[12px]" required>
-                                        <option value="">Pilih poli</option>
-                                        @foreach ($poliOptions as $value => $label)
-                                            <option value="{{ $value }}">{{ $label }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="doctor" class="text-[14px] font-semibold text-[#0F172A] mb-2 block">DOKTER</label>
-                                    <select id="doctor" name="doctor" class="input !h-[44px] !rounded-[12px]" required>
-                                        <option value="">Pilih dokter</option>
-                                        <option value="Dr. Ahmad">Dr. Ahmad</option>
-                                        <option value="Dr. Sari">Dr. Sari</option>
-                                        <option value="Dr. Rina">Dr. Rina</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="payment_method" class="text-[14px] font-semibold text-[#0F172A] mb-2 block">JENIS PEMBIAYAAN</label>
-                                    <select id="payment_method" name="payment_method" class="input !h-[44px] !rounded-[12px]" required>
-                                        <option value="">Pilih pembiayaan</option>
-                                        <option value="BPJS">BPJS</option>
-                                        <option value="Umum">Umum</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="nomor_antrian" class="text-[14px] font-semibold text-[#0F172A] mb-2 block">NOMOR ANTRIAN</label>
-                                    <input id="nomor_antrian" name="nomor_antrian" type="text" value="{{ $nextQueueNumber }}" class="input !h-[44px] !rounded-[12px] bg-[#F8FAFC]" readonly>
-                                    <p class="text-[12px] text-[#94A3B8] mt-1">Kosongkan untuk otomatis.</p>
+                            <div x-data="{
+                                doctorsByPoli: @js($doctorsByPoli ?? []),
+                                selectedDepartment: '{{ old('department', $selectedDepartment ?? '') }}',
+                                get availableDoctors() {
+                                    return this.doctorsByPoli[this.selectedDepartment] || [];
+                                }
+                            }">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label for="department" class="text-[14px] font-semibold text-[#0F172A] mb-2 block">POLI TUJUAN</label>
+                                        <select
+                                            id="department"
+                                            name="department"
+                                            x-model="selectedDepartment"
+                                            class="input !h-[44px] !rounded-[12px]"
+                                            required>
+                                            <option value="">Pilih poli</option>
+                                            @foreach ($poliOptions as $department)
+                                                <option value="{{ $department }}"
+                                                        data-next="{{ $queueNumberMap[$department] ?? '' }}"
+                                                        @selected(old('department', $selectedDepartment) === $department)>
+                                                    {{ $department }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="payment_method" class="text-[14px] font-semibold text-[#0F172A] mb-2 block">JENIS PEMBIAYAAN</label>
+                                        <select id="payment_method" name="payment_method" class="input !h-[44px] !rounded-[12px]" required>
+                                            <option value="">Pilih pembiayaan</option>
+                                            <option value="BPJS">BPJS</option>
+                                            <option value="Umum">Umum</option>
+                                        </select>
+                                    </div>
+                                    <div x-show="selectedDepartment && availableDoctors.length > 0" x-transition>
+                                        <label for="doctor" class="text-[14px] font-semibold text-[#0F172A] mb-2 block">DOKTER</label>
+                                        <select id="doctor" name="doctor" class="input !h-[44px] !rounded-[12px]">
+                                            <option value="">Pilih dokter</option>
+                                            <template x-for="doctor in availableDoctors" :key="doctor">
+                                                <option :value="doctor" x-text="doctor" :selected="'{{ old('doctor') }}' === doctor"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="nomor_antrian" class="text-[14px] font-semibold text-[#0F172A] mb-2 block">NOMOR ANTRIAN</label>
+                                        <input id="nomor_antrian"
+                                               name="nomor_antrian"
+                                               type="text"
+                                               value="{{ old('nomor_antrian', $nextQueueNumber) }}"
+                                               class="input !h-[44px] !rounded-[12px] bg-[#F8FAFC] uppercase font-bold text-center text-sky-700"
+                                               readonly
+                                               data-default="{{ $nextQueueNumber }}">
+                                        <p class="text-[12px] text-[#94A3B8] mt-1">Nomor terisi otomatis sesuai poli dan tanggal.</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -225,7 +248,7 @@
                                                 <div class="text-[13px] text-[#94A3B8] mt-0.5">RM: {{ $ticket->patient->medical_record_number }}</div>
                                             </td>
                                             <td class="px-4 py-4 text-[#0F172A]">
-                                                {{ $ticket->poli ?? 'Umum' }}
+                                                {{ $ticket->department ?? 'Poli Umum' }}
                                             </td>
                                             <td class="px-4 py-4 text-[#0F172A]">
                                                 {{ $ticket->doctor ?? 'Dr. Ahmad' }}
@@ -281,6 +304,25 @@
     @push('scripts')
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const queueNumberMap = @json($queueNumberMap ?? []);
+        const departmentSelect = document.getElementById('department');
+        const queueInput = document.getElementById('nomor_antrian');
+
+        const updateQueueNumber = () => {
+            if (!queueInput) {
+                return;
+            }
+
+            const selected = departmentSelect?.value || '';
+            const fallback = queueInput.dataset.default || '';
+            queueInput.value = queueNumberMap[selected] ?? fallback;
+        };
+
+        if (departmentSelect && queueInput) {
+            updateQueueNumber();
+            departmentSelect.addEventListener('change', updateQueueNumber);
+        }
+
         // Handle BPJS Verification
         document.querySelectorAll('.bpjs-verify-btn').forEach(button => {
             button.addEventListener('click', async function() {
@@ -357,7 +399,7 @@
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        Verifikasi Peserta
+                        <span>Verifikasi Peserta</span>
                     `;
                 }
             });

@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\BpjsClaim;
+use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\QueueTicket;
 use App\Models\SyncQueue;
+use App\Rules\DoctorAvailableInDepartment;
 use App\Support\Audit;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -52,7 +55,7 @@ class PatientController extends Controller
         $patients = Patient::query()
             ->withCount('visits')
             ->with(['latestVisit' => function ($query) {
-                $query->latest('visit_datetime');
+                $query->latest('visit_datetime')->limit(1);
             }])
             ->when($search, function ($query) use ($search) {
                 $query->where(function ($subQuery) use ($search) {
@@ -83,7 +86,32 @@ class PatientController extends Controller
      */
     public function create()
     {
-        return view('patients.create');
+        $poliOptions = config('queue_ticket.departments', [
+            'Poli Umum',
+            'Poli Gigi',
+            'Poli KIA (Kesehatan Ibu dan Anak)',
+            'Poli Anak',
+        ]);
+
+        $defaultDepartment = $poliOptions[0] ?? config('queue_ticket.default_department', 'Poli Umum');
+        $queueDate = Carbon::now('Asia/Jakarta')->toDateString();
+
+        $queueNumberMap = collect($poliOptions)
+            ->mapWithKeys(function (string $department) use ($queueDate) {
+                return [$department => QueueTicket::nextNumberForDate($queueDate, $department)];
+            })
+            ->all();
+
+        // Daftar dokter per poli (from database with caching, fallback to config)
+        $doctorsByPoli = Doctor::getByDepartment() ?: config('doctors.by_department', []);
+
+        return view('patients.create', [
+            'poliOptions' => $poliOptions,
+            'queueNumberMap' => $queueNumberMap,
+            'defaultDepartment' => $defaultDepartment,
+            'queueDate' => $queueDate,
+            'doctorsByPoli' => $doctorsByPoli,
+        ]);
     }
 
     /**
@@ -93,32 +121,57 @@ class PatientController extends Controller
     {
         $data = $this->validatedData($request);
 
+        // Validate queue-related fields if enqueue_after is true
+        if ($request->boolean('enqueue_after')) {
+            $validDepartments = config('queue_ticket.departments', []);
+            $validPaymentMethods = ['BPJS', 'UMUM'];
+
+            $queueDepartment = $request->input('queue_department');
+
+            $request->validate([
+                'queue_date' => ['nullable', 'date', 'after_or_equal:today'],
+                'queue_department' => ['nullable', 'string', Rule::in($validDepartments)],
+                'queue_doctor' => ['nullable', 'string', new DoctorAvailableInDepartment($queueDepartment)],
+                'queue_payment_method' => ['nullable', 'string', Rule::in($validPaymentMethods)],
+            ]);
+        }
+
         $data['medical_record_number'] = $data['medical_record_number'] ?? $this->generateMedicalRecordNumber();
         $data['created_by'] = Auth::id();
         $data['updated_by'] = Auth::id();
 
-        $patient = Patient::create($data);
+        // Use transaction for patient creation and optional queue enrollment
+        $patient = DB::transaction(function () use ($data, $request) {
+            $patient = Patient::create($data);
 
-        Audit::log('patient_created', Patient::class, $patient->id, [
-            'new' => $this->auditablePatientData($patient),
-        ]);
-
-        if ($request->boolean('enqueue_after')) {
-            $queueDate = $request->input('queue_date')
-                ? Carbon::parse($request->input('queue_date'), 'Asia/Jakarta')->toDateString()
-                : Carbon::now('Asia/Jakarta')->toDateString();
-
-            QueueTicket::create([
-                'patient_id' => $patient->id,
-                'tanggal_antrian' => $queueDate,
-                'nomor_antrian' => QueueTicket::nextNumberForDate($queueDate),
-                'status' => QueueTicket::STATUS_WAITING,
-                'meta' => [
-                    'created_by' => Auth::id(),
-                    'source' => 'registration',
-                ],
+            Audit::log('patient_created', Patient::class, $patient->id, [
+                'new' => $this->auditablePatientData($patient),
             ]);
-        }
+
+            if ($request->boolean('enqueue_after')) {
+                $queueDate = $request->input('queue_date')
+                    ? Carbon::parse($request->input('queue_date'), 'Asia/Jakarta')->toDateString()
+                    : Carbon::now('Asia/Jakarta')->toDateString();
+
+                $queueDepartment = $request->input('queue_department', config('queue_ticket.default_department', 'Poli Umum'));
+
+                QueueTicket::create([
+                    'patient_id' => $patient->id,
+                    'tanggal_antrian' => $queueDate,
+                    'nomor_antrian' => QueueTicket::nextNumberForDate($queueDate, $queueDepartment),
+                    'department' => $queueDepartment,
+                    'doctor' => $request->input('queue_doctor'),
+                    'payment_method' => $request->input('queue_payment_method'),
+                    'status' => QueueTicket::STATUS_WAITING,
+                    'meta' => [
+                        'created_by' => Auth::id(),
+                        'source' => 'registration',
+                    ],
+                ]);
+            }
+
+            return $patient;
+        });
 
         $redirectTo = $request->input('redirect_to');
 
@@ -296,4 +349,5 @@ class PatientController extends Controller
             'province',
         ]);
     }
+
 }

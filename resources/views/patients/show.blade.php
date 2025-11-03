@@ -187,9 +187,9 @@
     </div>
 
     {{-- Bottom Section: Tabs for Riwayat --}}
-    <section class="bg-white rounded-[18px] shadow-sm border border-[#E2E8F0] overflow-hidden">
+    <section class="bg-white rounded-[18px] shadow-sm border border-[#E2E8F0] overflow-hidden" x-data="{ activeTab: '{{ request('tab', 'kunjungan') }}' }">
         <div class="border-b border-[#E2E8F0]">
-            <div class="flex px-6" x-data="{ activeTab: '{{ request('tab', 'kunjungan') }}' }">
+            <div class="flex px-6">
                 <button @click="activeTab = 'kunjungan'; window.history.pushState({}, '', '?tab=kunjungan')"
                         :class="activeTab === 'kunjungan' ? 'border-b-2 border-[#2563EB] text-[#2563EB]' : 'text-[#6B7280] hover:text-[#0F172A]'"
                         class="px-4 py-4 text-[14px] font-semibold transition-colors">
@@ -203,11 +203,11 @@
             </div>
         </div>
 
-        <div x-data="{ activeTab: '{{ request('tab', 'kunjungan') }}' }">
-            {{-- Tab: Riwayat Kunjungan --}}
+        <div>
+            {{-- Tab: Riwayat Kunjungan (with BPJS/SATUSEHAT integration) --}}
             <div x-show="activeTab === 'kunjungan'" class="p-6">
-                    </div>
-                    <div class="p-5 space-y-5">
+                <div class="space-y-6">
+                    <div class="p-5 space-y-5 rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC]">
                         {{-- BPJS & SATUSEHAT Status --}}
                         <div class="space-y-3">
                             <div class="flex items-center justify-between">
@@ -326,11 +326,9 @@
                             </div>
                         @endif
                     </div>
-                </section>
 
-            {{-- Tab: Riwayat Kunjungan --}}
-            <div x-show="activeTab === 'kunjungan'" class="p-6">
-                @if ($patient->visits->isEmpty())
+                    {{-- Visit History List --}}
+                    @if ($patient->visits->isEmpty())
                     <div class="py-12 text-center">
                         <svg class="mx-auto h-12 w-12 text-[#94A3B8]" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V19.5a2.25 2.25 0 002.25 2.25h.75" />
@@ -387,6 +385,7 @@
                         @endforeach
                     </div>
                 @endif
+                </div>
             </div>
 
             {{-- Tab: Riwayat Rujukan --}}

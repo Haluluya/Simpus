@@ -77,7 +77,7 @@
                     <h3 class="text-sm font-semibold text-[#0F172A]">Tambah Nomor Antrian</h3>
                 </div>
                 <div class="px-6 pb-6">
-                    <form method="POST" action="{{ route('queues.store') }}" class="grid gap-4 md:grid-cols-5">
+                    <form method="POST" action="{{ route('queues.store') }}" class="grid gap-4 md:grid-cols-6">
                         @csrf
                         <div class="md:col-span-2">
                             <label for="patient_id" class="block text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">PASIEN *</label>
@@ -89,12 +89,31 @@
                             </select>
                         </div>
                         <div>
+                            <label for="queue_department" class="block text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">POLI *</label>
+                            <select id="queue_department" name="department" required class="block w-full h-10 rounded-xl border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Pilih poli...</option>
+                                @foreach ($poliOptions as $department)
+                                    <option value="{{ $department }}"
+                                            data-next="{{ $queueNumberMap[$department] ?? '' }}"
+                                            @selected(old('department', $selectedDepartment) === $department)>
+                                        {{ $department }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <label for="tanggal_antrian" class="block text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">TANGGAL *</label>
                             <input type="date" id="tanggal_antrian" name="tanggal_antrian" value="{{ $filters['tanggal'] }}" required class="block w-full h-10 rounded-xl border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
                         <div>
                             <label for="nomor_antrian" class="block text-xs font-semibold uppercase tracking-wider text-[#64748B] mb-1.5">NOMOR</label>
-                            <input type="text" id="nomor_antrian" name="nomor_antrian" placeholder="A01" class="block w-full h-10 rounded-xl border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                            <input type="text"
+                                   id="nomor_antrian"
+                                   name="nomor_antrian"
+                                   value="{{ old('nomor_antrian', $queueNumberMap[$selectedDepartment] ?? '') }}"
+                                   class="block w-full h-10 rounded-xl border-gray-300 text-sm uppercase bg-[#F8FAFC]"
+                                   readonly
+                                   data-default="{{ $queueNumberMap[$selectedDepartment] ?? '' }}">
                         </div>
                         <div class="flex items-end">
                             <input type="hidden" name="redirect_to" value="{{ request()->routeIs('registrations.index') ? 'registrations.index' : '' }}">
@@ -203,3 +222,28 @@
         </div>
     </div>
 </x-app-layout>
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const queueNumberMap = @json($queueNumberMap ?? []);
+            const departmentSelect = document.getElementById('queue_department');
+            const queueInput = document.getElementById('nomor_antrian');
+
+            const updateQueueNumber = () => {
+                if (!queueInput) {
+                    return;
+                }
+
+                const selected = departmentSelect?.value || '';
+                const fallback = queueInput.dataset.default || '';
+                queueInput.value = queueNumberMap[selected] ?? fallback;
+            };
+
+            if (departmentSelect && queueInput) {
+                updateQueueNumber();
+                departmentSelect.addEventListener('change', updateQueueNumber);
+            }
+        });
+    </script>
+@endpush

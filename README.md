@@ -78,10 +78,11 @@ Aplikasi web untuk manajemen klinik/puskesmas berbasis Laravel 12 dengan integra
 - 📊 **Dashboard & Laporan** - Statistik kunjungan, export Excel
 - 👥 **Role-based Access** - Admin, Dokter, Petugas Lab, Apoteker, Petugas Pendaftaran
 
-## � Dokumentasi Teknis
+## 📚 Dokumentasi Teknis
 
 Untuk memahami arsitektur sistem dan struktur database:
 
+- 🏗️ **[System Architecture](docs/ARCHITECTURE.md)** - Overview arsitektur sistem, technology stack, dan integration
 - 📊 **[ERD (Entity Relationship Diagram)](docs/ERD.md)** - Skema database lengkap dengan relasi antar tabel
 - 🔄 **[DFD (Data Flow Diagram)](docs/DFD.md)** - Alur data dan proses sistem
 - 📖 **[Optimasi Performa](docs/OPTIMASI-PERFORMA.md)** - Panduan caching dan optimasi
@@ -208,11 +209,12 @@ Setelah `php artisan migrate --seed`, gunakan akun berikut untuk login:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@simpus.test | password |
-| Dokter | dokter@simpus.test | password |
-| Petugas Lab | lab@simpus.test | password |
-| Apoteker | apoteker@simpus.test | password |
-| Pendaftaran | pendaftaran@simpus.test | password |
+| Administrator | admin@simpus.test | password123 |
+| Dokter | dokter@simpus.test | password123 |
+| Petugas Rekam Medis | rekammedis@simpus.test | password123 |
+| Petugas Pendaftaran | pendaftaran@simpus.test | password123 |
+| Petugas Apotek | apotik@simpus.test | password123 |
+| Petugas Lab | lab@simpus.test | password123 |
 
 ## 🔧 Konfigurasi Integrasi
 

@@ -86,11 +86,11 @@
                             <input type="text" id="no-kartu" maxlength="13" placeholder="0001234567890" class="w-full rounded-lg border-[#E2E8F0] shadow-sm focus:border-[#2563EB] focus:ring-[#2563EB]">
                         </div>
 
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3 text-sm font-semibold text-white hover:bg-[#1D4ED8]">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="submit" id="btn-cek-peserta" class="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3 text-sm font-semibold text-white hover:bg-[#1D4ED8] transition-opacity disabled:opacity-60">
+                            <svg class="h-5 w-5 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            Verifikasi Peserta
+                            <span class="btn-text">Verifikasi Peserta</span>
                         </button>
                     </form>
 
@@ -221,11 +221,11 @@
 
                             <input type="hidden" name="user" value="{{ auth()->user()->name ?? 'system' }}">
 
-                            <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-[#16A34A] px-6 py-3 text-sm font-semibold text-white hover:bg-[#15803D]">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" id="btn-create-sep" class="inline-flex items-center gap-2 rounded-lg bg-[#16A34A] px-6 py-3 text-sm font-semibold text-white hover:bg-[#15803D] transition-opacity disabled:opacity-60">
+                                <svg class="h-5 w-5 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
-                                Buat SEP
+                                <span class="btn-text">Buat SEP</span>
                             </button>
                         </form>
 
@@ -239,11 +239,11 @@
                             @csrf
                             <input type="text" name="noSep" placeholder="No. SEP" required class="flex-1 rounded-lg border-[#E2E8F0]">
                             <input type="hidden" name="user" value="{{ auth()->user()->name ?? 'system' }}">
-                            <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-[#DC2626] px-6 py-3 text-sm font-semibold text-white hover:bg-[#B91C1C]">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" id="btn-delete-sep" class="inline-flex items-center gap-2 rounded-lg bg-[#DC2626] px-6 py-3 text-sm font-semibold text-white hover:bg-[#B91C1C] transition-opacity disabled:opacity-60">
+                                <svg class="h-5 w-5 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
-                                Hapus SEP
+                                <span class="btn-text">Hapus SEP</span>
                             </button>
                         </form>
                         <div id="result-delete-sep" class="mt-4 hidden"></div>
@@ -256,11 +256,11 @@
                     <form id="form-cek-rujukan" class="flex gap-4">
                         @csrf
                         <input type="text" name="no_rujukan" placeholder="No. Rujukan" required class="flex-1 rounded-lg border-[#E2E8F0]">
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3 text-sm font-semibold text-white hover:bg-[#1D4ED8]">
-                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button type="submit" id="btn-cek-rujukan" class="inline-flex items-center gap-2 rounded-lg bg-[#2563EB] px-6 py-3 text-sm font-semibold text-white hover:bg-[#1D4ED8] transition-opacity disabled:opacity-60">
+                            <svg class="h-5 w-5 btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
-                            Cari
+                            <span class="btn-text">Cari</span>
                         </button>
                     </form>
                     <div id="result-rujukan" class="mt-6 hidden"></div>
@@ -324,6 +324,34 @@
 
     @push('scripts')
     <script>
+        // Helper function for button loading state
+        function setButtonLoading(buttonId, loading, loadingText = 'Memproses...') {
+            const button = document.getElementById(buttonId);
+            if (!button) return;
+
+            const icon = button.querySelector('.btn-icon');
+            const text = button.querySelector('.btn-text');
+
+            if (loading) {
+                button.disabled = true;
+                button.dataset.originalText = text?.textContent || '';
+                button.dataset.originalIcon = icon?.outerHTML || '';
+                if (icon) {
+                    icon.outerHTML = '<svg class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                }
+                if (text) text.textContent = loadingText;
+            } else {
+                button.disabled = false;
+                const spinner = button.querySelector('.animate-spin');
+                if (spinner && button.dataset.originalIcon) {
+                    spinner.outerHTML = button.dataset.originalIcon;
+                }
+                if (text && button.dataset.originalText) {
+                    text.textContent = button.dataset.originalText;
+                }
+            }
+        }
+
         // Toggle NIK/Kartu field
         document.getElementById('search-type').addEventListener('change', function() {
             const nikField = document.getElementById('nik-field');
@@ -347,7 +375,7 @@
             const searchType = document.getElementById('search-type').value;
             const serviceDate = document.getElementById('service-date').value;
             const resultDiv = document.getElementById('result-peserta');
-            
+
             let url, data;
             if (searchType === 'nik') {
                 url = '{{ route("bpjs.cek-peserta") }}';
@@ -362,6 +390,9 @@
                     service_date: serviceDate
                 };
             }
+
+            // Show loading state
+            setButtonLoading('btn-cek-peserta', true, 'Memverifikasi...');
 
             try {
                 const response = await fetch(url, {
@@ -395,6 +426,8 @@
             } catch (error) {
                 resultDiv.classList.remove('hidden');
                 resultDiv.innerHTML = `<div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">Error: ${error.message}</div>`;
+            } finally {
+                setButtonLoading('btn-cek-peserta', false);
             }
         });
 
@@ -404,6 +437,8 @@
             const formData = new FormData(this);
             const data = Object.fromEntries(formData);
             const resultDiv = document.getElementById('result-sep');
+
+            setButtonLoading('btn-create-sep', true, 'Membuat SEP...');
 
             try {
                 const response = await fetch('{{ route("bpjs.sep.create") }}', {
@@ -431,6 +466,8 @@
             } catch (error) {
                 resultDiv.classList.remove('hidden');
                 resultDiv.innerHTML = `<div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">Error: ${error.message}</div>`;
+            } finally {
+                setButtonLoading('btn-create-sep', false);
             }
         });
 
@@ -441,6 +478,8 @@
             
             const formData = new FormData(this);
             const resultDiv = document.getElementById('result-delete-sep');
+
+            setButtonLoading('btn-delete-sep', true, 'Menghapus...');
 
             try {
                 const response = await fetch('{{ route("bpjs.sep.delete") }}', {
@@ -460,6 +499,8 @@
             } catch (error) {
                 resultDiv.classList.remove('hidden');
                 resultDiv.innerHTML = `<div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">Error: ${error.message}</div>`;
+            } finally {
+                setButtonLoading('btn-delete-sep', false);
             }
         });
 
@@ -468,6 +509,8 @@
             e.preventDefault();
             const formData = new FormData(this);
             const resultDiv = document.getElementById('result-rujukan');
+
+            setButtonLoading('btn-cek-rujukan', true, 'Mencari...');
 
             try {
                 const response = await fetch('{{ route("bpjs.rujukan.cek") }}', {
@@ -500,6 +543,8 @@
             } catch (error) {
                 resultDiv.classList.remove('hidden');
                 resultDiv.innerHTML = `<div class="rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">Error: ${error.message}</div>`;
+            } finally {
+                setButtonLoading('btn-cek-rujukan', false);
             }
         });
 

@@ -40,7 +40,20 @@
         display: inline-flex;
     }
     .btn-primary {
-        @apply bg-[#2563EB] text-white hover:bg-[#1D4ED8] focus:ring-[#2563EB]/40;
+        @apply bg-[#2563EB] text-white focus:ring-[#2563EB]/40 transition-all duration-200;
+    }
+    .btn-primary:hover,
+    a.btn-primary:hover,
+    button.btn-primary:hover {
+        background-color: #1e3a8a !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+        transform: translateY(-1px);
+    }
+    .btn-primary:hover span,
+    a.btn-primary:hover span,
+    button.btn-primary:hover span {
+        color: #ffffff !important;
     }
     .btn-outline {
         @apply border border-[#2563EB] bg-white text-[#2563EB] hover:bg-[#EEF2FF] focus:ring-[#2563EB]/30;

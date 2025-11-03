@@ -2,6 +2,113 @@
     $isEdit = isset($patient);
 @endphp
 
+@if (!$isEdit && isset($poliOptions))
+<div class="mb-8 rounded-lg border border-slate-300 bg-slate-50 p-6">
+    <div class="mb-6">
+        <h3 class="text-lg font-semibold text-slate-800">Informasi Antrian</h3>
+        <p class="mt-1 text-sm text-slate-600">Tentukan poli tujuan dan informasi antrian terlebih dahulu</p>
+    </div>
+
+    <div x-data="{
+        enqueueAfter: true,
+        queueNumberMap: @js($queueNumberMap ?? []),
+        doctorsByPoli: @js($doctorsByPoli ?? []),
+        selectedDepartment: '{{ old('queue_department', $defaultDepartment ?? '') }}',
+        get queueNumber() {
+            return this.queueNumberMap[this.selectedDepartment] || 'A01';
+        },
+        get availableDoctors() {
+            return this.doctorsByPoli[this.selectedDepartment] || [];
+        }
+    }" class="space-y-6">
+        <input type="hidden" name="enqueue_after" value="1" />
+
+        <div class="grid gap-6 sm:grid-cols-2">
+            <div>
+                <x-input-label for="queue_date" value="Tanggal Antrian" />
+                <x-text-input
+                    id="queue_date"
+                    name="queue_date"
+                    type="date"
+                    class="mt-2 block w-full"
+                    value="{{ old('queue_date', $queueDate ?? now()->toDateString()) }}"
+                    required
+                />
+                <x-input-error :messages="$errors->get('queue_date')" class="mt-1" />
+            </div>
+
+            <div>
+                <x-input-label for="queue_department" value="Poli Tujuan" />
+                <select
+                    id="queue_department"
+                    name="queue_department"
+                    x-model="selectedDepartment"
+                    class="mt-2 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500"
+                    required
+                >
+                    @foreach ($poliOptions as $poli)
+                        <option value="{{ $poli }}" @selected(old('queue_department', $defaultDepartment ?? '') === $poli)>
+                            {{ $poli }}
+                        </option>
+                    @endforeach
+                </select>
+                <x-input-error :messages="$errors->get('queue_department')" class="mt-1" />
+            </div>
+
+            <div>
+                <x-input-label for="queue_payment_method" value="Jenis Pembiayaan" />
+                <select
+                    id="queue_payment_method"
+                    name="queue_payment_method"
+                    class="mt-2 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500"
+                    required
+                >
+                    <option value="">Pilih pembiayaan</option>
+                    <option value="BPJS" @selected(old('queue_payment_method') === 'BPJS')>BPJS</option>
+                    <option value="Umum" @selected(old('queue_payment_method') === 'Umum')>Umum</option>
+                </select>
+                <x-input-error :messages="$errors->get('queue_payment_method')" class="mt-1" />
+            </div>
+
+            <div>
+                <x-input-label for="queue_number_display" value="Nomor Antrian" />
+                <input
+                    id="queue_number_display"
+                    type="text"
+                    x-bind:value="queueNumber"
+                    class="mt-2 block w-full rounded-md border-slate-300 bg-slate-100 font-bold text-lg text-center text-sky-700 shadow-sm cursor-not-allowed"
+                    readonly
+                    disabled
+                />
+                <p class="mt-1 text-xs text-slate-500">Nomor otomatis sesuai poli yang dipilih</p>
+            </div>
+        </div>
+
+        <div x-show="selectedDepartment && availableDoctors.length > 0" x-transition class="grid gap-6 sm:grid-cols-1">
+            <div>
+                <x-input-label for="queue_doctor" value="Pilih Dokter" />
+                <select
+                    id="queue_doctor"
+                    name="queue_doctor"
+                    class="mt-2 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500"
+                >
+                    <option value="">Pilih dokter</option>
+                    <template x-for="doctor in availableDoctors" :key="doctor">
+                        <option :value="doctor" x-text="doctor" :selected="'{{ old('queue_doctor') }}' === doctor"></option>
+                    </template>
+                </select>
+                <x-input-error :messages="$errors->get('queue_doctor')" class="mt-1" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-6 border-t border-slate-200 pt-6">
+    <h3 class="text-lg font-semibold text-slate-800">Data Pasien</h3>
+    <p class="mt-1 text-sm text-slate-600">Lengkapi informasi identitas pasien</p>
+</div>
+@endif
+
 <div class="grid gap-6 sm:grid-cols-2">
     <div>
         <x-input-label for="name" value="Nama Lengkap" />
