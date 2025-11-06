@@ -65,6 +65,14 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('patients/{patient}', [PatientController::class, 'destroy'])
         ->middleware('permission:patient.delete')
         ->name('patients.destroy');
+        
+    Route::put('patients/{patient}/bpjs-status', [PatientController::class, 'updateBpjsStatus'])
+        ->middleware('permission:patient.update')
+        ->name('patients.bpjs-status.update');
+        
+    Route::get('patients/{patient}/bpjs-status', [PatientController::class, 'updateBpjsStatusQuick'])
+        ->middleware('permission:patient.update')
+        ->name('patients.bpjs-status.quick');
 
     Route::get('registrations', [RegistrationController::class, 'index'])
         ->middleware('permission:patient.create|queue.create')

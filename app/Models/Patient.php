@@ -92,4 +92,18 @@ class Patient extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    /**
+     * Update BPJS status and class in patient meta
+     */
+    public function updateBpjsStatus(string $status, string $kelas): self
+    {
+        $meta = $this->meta ?? [];
+        $meta['bpjs_status'] = $status;
+        $meta['bpjs_class'] = $kelas;
+        $this->meta = $meta;
+        $this->save();
+
+        return $this;
+    }
 }

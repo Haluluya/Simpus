@@ -12,6 +12,9 @@ class ReferralSeeder extends Seeder
      */
     public function run(): void
     {
+        // Delete all records to avoid duplicates
+        Referral::query()->delete();
+
         Referral::factory()
             ->count(25)
             ->create();

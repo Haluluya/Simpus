@@ -137,4 +137,63 @@ class QueueTicket extends Model
     {
         return $this->belongsTo(Visit::class);
     }
+
+    /**
+     * Boot the model and add event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Log when nomor_antrian is being updated
+        static::updating(function ($queueTicket) {
+            if ($queueTicket->isDirty('nomor_antrian')) {
+                \Log::info('QueueTicket nomor_antrian updated', [
+                    'queue_ticket_id' => $queueTicket->id,
+                    'old_nomor_antrian' => $queueTicket->getOriginal('nomor_antrian'),
+                    'new_nomor_antrian' => $queueTicket->nomor_antrian,
+                    'tanggal_antrian' => $queueTicket->tanggal_antrian,
+                    'patient_id' => $queueTicket->patient_id,
+                    'updated_at' => now(),
+                    'updated_by' => auth()->id() ?? 'system',
+                    'trace' => collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10))
+                        ->pluck('file', 'function')
+                        ->take(5)
+                        ->toArray()
+                ]);
+            }
+        });
+        
+        // Log when queue ticket is created
+        static::creating(function ($queueTicket) {
+            \Log::info('QueueTicket creating', [
+                'patient_id' => $queueTicket->patient_id,
+                'nomor_antrian' => $queueTicket->nomor_antrian,
+                'tanggal_antrian' => $queueTicket->tanggal_antrian,
+                'department' => $queueTicket->department,
+                'creating_at' => now()
+            ]);
+        });
+        
+        // Log when queue ticket is updated
+        static::updating(function ($queueTicket) {
+            if ($queueTicket->isDirty()) {
+                $dirtyFields = $queueTicket->getDirty();
+                \Log::info('QueueTicket updated', [
+                    'queue_ticket_id' => $queueTicket->id,
+                    'changed_fields' => $dirtyFields,
+                    'patient_id' => $queueTicket->patient_id,
+                    'tanggal_antrian' => $queueTicket->tanggal_antrian
+                ]);
+                
+                if (array_key_exists('nomor_antrian', $dirtyFields)) {
+                    \Log::info('QueueTicket nomor_antrian specifically changed', [
+                        'queue_ticket_id' => $queueTicket->id,
+                        'old_value' => $queueTicket->getOriginal('nomor_antrian'),
+                        'new_value' => $dirtyFields['nomor_antrian']
+                    ]);
+                }
+            }
+        });
+    }
 }

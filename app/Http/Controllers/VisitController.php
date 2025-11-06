@@ -69,11 +69,34 @@ class VisitController extends Controller
             ->orderBy('name')
             ->get(['id', 'name']);
 
+        // Generate queue number map untuk semua poli
+        $queueDate = now('Asia/Jakarta')->toDateString();
+        $poliOptions = config('queue_ticket.departments', [
+            config('queue_ticket.default_department', 'Poli Umum'),
+        ]);
+
+        $queueNumberMap = collect($poliOptions)
+            ->mapWithKeys(function (string $department) use ($queueDate) {
+                return [$department => QueueTicket::nextNumberForDate($queueDate, $department)];
+            })
+            ->all();
+
+        $defaultDepartment = $poliOptions[0] ?? config('queue_ticket.default_department', 'Poli Umum');
+        $defaultClinic = $request->old('clinic_name',
+            $request->get('clinic_name',
+                $patient?->meta['default_clinic'] ??
+                (auth()->user()?->department ?? $defaultDepartment)
+            )
+        );
+
         return view('visits.create', [
             'patient' => $patient,
             'patients' => $patients,
             'providers' => $providers,
-            'nextQueueNumber' => QueueTicket::nextNumberForDate(now('Asia/Jakarta')),
+            'poliOptions' => $poliOptions,
+            'queueNumberMap' => $queueNumberMap,
+            'defaultClinic' => $defaultClinic,
+            'nextQueueNumber' => $queueNumberMap[$defaultClinic] ?? QueueTicket::nextNumberForDate($queueDate),
         ]);
     }
 
@@ -90,28 +113,86 @@ class VisitController extends Controller
             'coverage_type' => ['required', Rule::in(['BPJS', 'UMUM'])],
             'sep_no' => ['nullable', 'string', 'max:40'],
             'bpjs_reference_no' => ['nullable', 'string', 'max:40'],
-            'queue_number' => ['nullable', 'string', 'max:20'],
+            'queue_number' => ['nullable', 'string', 'max:20', 'regex:/^[A-Z]{1,3}\d{3,4}$/'],
             'chief_complaint' => ['nullable', 'string'],
             'triage_notes' => ['nullable', 'string'],
             'status' => ['nullable', Rule::in(['SCHEDULED', 'ONGOING', 'COMPLETED', 'CANCELLED'])],
             'meta' => ['nullable', 'array'],
         ]);
 
-        $visit = Visit::create([
-            'patient_id' => $data['patient_id'],
-            'provider_id' => $data['provider_id'] ?? Auth::id(),
-            'visit_number' => $this->generateVisitNumber(),
-            'visit_datetime' => $data['visit_datetime'],
-            'clinic_name' => $data['clinic_name'],
-            'coverage_type' => $data['coverage_type'],
-            'sep_no' => $data['sep_no'] ?? null,
-            'bpjs_reference_no' => $data['bpjs_reference_no'] ?? null,
-            'queue_number' => $data['queue_number'] ?? null,
-            'status' => $data['status'] ?? 'ONGOING',
-            'chief_complaint' => $data['chief_complaint'] ?? null,
-            'triage_notes' => $data['triage_notes'] ?? null,
-            'meta' => $data['meta'] ?? [],
-        ]);
+        // Use database transaction to ensure atomicity
+        $visit = \DB::transaction(function () use ($data) {
+            $visitDate = \Carbon\Carbon::parse($data['visit_datetime'])->toDateString();
+            $department = $data['clinic_name'];
+
+            // Generate queue number sesuai poli/department
+            $queueNumber = QueueTicket::nextNumberForDate($visitDate, $department);
+
+            // Validate prefix jika user input manual queue_number
+            if (!empty($data['queue_number'])) {
+                $expectedPrefix = \Illuminate\Support\Str::upper(
+                    preg_replace('/\d+$/', '', $queueNumber)
+                );
+                $actualPrefix = \Illuminate\Support\Str::upper(
+                    preg_replace('/\d+$/', '', $data['queue_number'])
+                );
+
+                if ($expectedPrefix !== $actualPrefix) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'queue_number' => "Nomor antrian harus dimulai dengan prefix {$expectedPrefix} untuk {$department}. Anda memasukkan: {$data['queue_number']}",
+                    ]);
+                }
+
+                // Check duplikasi di visits
+                $existingVisit = Visit::where('queue_number', $data['queue_number'])
+                    ->whereNull('deleted_at')
+                    ->first();
+
+                if ($existingVisit) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'queue_number' => "Nomor antrian {$data['queue_number']} sudah digunakan pada kunjungan lain (Visit #{$existingVisit->visit_number}).",
+                    ]);
+                }
+
+                $queueNumber = $data['queue_number'];
+            }
+
+            // Auto-create QueueTicket jika belum ada
+            $queueTicket = QueueTicket::create([
+                'patient_id' => $data['patient_id'],
+                'tanggal_antrian' => $visitDate,
+                'nomor_antrian' => $queueNumber,
+                'department' => $department,
+                'status' => QueueTicket::STATUS_CALLING,
+                'meta' => [
+                    'created_by' => Auth::id(),
+                    'auto_created_from_visit' => true,
+                ],
+            ]);
+
+            // Create Visit dengan queue_number yang SAMA
+            $visit = Visit::create([
+                'patient_id' => $data['patient_id'],
+                'provider_id' => $data['provider_id'] ?? Auth::id(),
+                'visit_number' => $this->generateVisitNumber(),
+                'visit_datetime' => $data['visit_datetime'],
+                'clinic_name' => $department,
+                'coverage_type' => $data['coverage_type'],
+                'sep_no' => $data['sep_no'] ?? null,
+                'bpjs_reference_no' => $data['bpjs_reference_no'] ?? null,
+                'queue_number' => $queueNumber,
+                'status' => $data['status'] ?? 'ONGOING',
+                'chief_complaint' => $data['chief_complaint'] ?? null,
+                'triage_notes' => $data['triage_notes'] ?? null,
+                'meta' => $data['meta'] ?? [],
+            ]);
+
+            // Link QueueTicket ke Visit
+            $queueTicket->visit_id = $visit->id;
+            $queueTicket->save();
+
+            return $visit;
+        });
 
         Audit::log('visit_created', Visit::class, $visit->id, [
             'new' => $this->auditableVisitData($visit),
@@ -129,6 +210,33 @@ class VisitController extends Controller
      */
     public function show(Visit $visit)
     {
+        // Check if queue number matches with related queue ticket
+        if ($visit->queueTicket) {
+            $expectedQueueNumber = $visit->queueTicket->nomor_antrian;
+            
+            if ($visit->queue_number !== $expectedQueueNumber) {
+                // If there's a mismatch, log it and potentially correct it
+                \Log::warning('Visit queue_number does not match QueueTicket nomor_antrian', [
+                    'visit_id' => $visit->id,
+                    'visit_queue_number' => $visit->queue_number,
+                    'queue_ticket_number' => $expectedQueueNumber,
+                    'patient_id' => $visit->patient_id
+                ]);
+                
+                // Optionally correct the queue number to match the QueueTicket
+                // Only do this if queue number is empty or A-prefixed (likely auto-generated)
+                if (empty($visit->queue_number) || (preg_match('/^A\d+$/', $visit->queue_number) && !preg_match('/^A\d+$/', $expectedQueueNumber))) {
+                    $visit->queue_number = $expectedQueueNumber;
+                    $visit->save();
+                    
+                    \Log::info('Visit queue_number corrected to match QueueTicket', [
+                        'visit_id' => $visit->id,
+                        'corrected_queue_number' => $expectedQueueNumber
+                    ]);
+                }
+            }
+        }
+        
         // Redirect to EMR page for unified experience
         return redirect()->route('emr.show', $visit);
     }
@@ -159,6 +267,21 @@ class VisitController extends Controller
                 ];
             })
             ->toArray();
+
+        \Log::info('Visit update method called', [
+            'visit_id' => $visit->id,
+            'updated_fields' => array_keys($visit->getDirty()),
+            'user_id' => auth()->id()
+        ]);
+        
+        if (isset($data['queue_number']) && $visit->isDirty('queue_number')) {
+            \Log::warning('Visit queue_number being updated in VisitController@update', [
+                'visit_id' => $visit->id,
+                'old_queue_number' => $visit->getOriginal('queue_number'),
+                'new_queue_number' => $data['queue_number'],
+                'user_id' => auth()->id()
+            ]);
+        }
 
         $visit->save();
 

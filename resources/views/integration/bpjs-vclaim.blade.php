@@ -408,15 +408,44 @@
                 resultDiv.classList.remove('hidden');
                 if (result.success) {
                     const peserta = result.data.response?.peserta;
+                    const statusKeterangan = peserta?.statusPeserta?.keterangan || '-';
+                    
+                    // Determine styling based on status
+                    let statusBgColor, statusTextColor, statusBorderColor, statusIcon, participantStatusText;
+                    if (statusKeterangan === 'AKTIF') {
+                        statusBgColor = 'bg-green-50';
+                        statusTextColor = 'text-green-900';
+                        statusBorderColor = 'border-green-200';
+                        statusIcon = '✓';
+                        participantStatusText = 'Peserta Aktif';
+                    } else if (statusKeterangan === 'TIDAK AKTIF') {
+                        statusBgColor = 'bg-red-50';
+                        statusTextColor = 'text-red-900';
+                        statusBorderColor = 'border-red-200';
+                        statusIcon = '✗';
+                        participantStatusText = 'Peserta Tidak Aktif';
+                    } else {
+                        statusBgColor = 'bg-gray-50';
+                        statusTextColor = 'text-gray-900';
+                        statusBorderColor = 'border-gray-200';
+                        statusIcon = '•';
+                        participantStatusText = 'Status Tidak Diketahui';
+                    }
+                    
                     resultDiv.innerHTML = `
-                        <div class="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-                            <h4 class="font-semibold text-emerald-900">✓ Peserta Ditemukan</h4>
-                            <div class="mt-2 space-y-1 text-sm">
-                                <p><span class="font-medium">Nama:</span> ${peserta?.nama || '-'}</p>
-                                <p><span class="font-medium">No. Kartu:</span> ${peserta?.noKartu || '-'}</p>
-                                <p><span class="font-medium">NIK:</span> ${peserta?.nik || '-'}</p>
-                                <p><span class="font-medium">Hak Kelas:</span> ${peserta?.hakKelas?.keterangan || '-'}</p>
-                                <p><span class="font-medium">Status:</span> ${peserta?.statusPeserta?.keterangan || '-'}</p>
+                        <div class="rounded-lg border ${statusBorderColor} ${statusBgColor} p-4">
+                            <div class="flex items-start gap-2">
+                                <span class="font-semibold ${statusTextColor}">${statusIcon}</span>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold ${statusTextColor}">${participantStatusText}</h4>
+                                    <div class="mt-2 space-y-1 text-sm">
+                                        <p><span class="font-medium">Nama:</span> ${peserta?.nama || '-'}</p>
+                                        <p><span class="font-medium">No. Kartu:</span> ${peserta?.noKartu || '-'}</p>
+                                        <p><span class="font-medium">NIK:</span> ${peserta?.nik || '-'}</p>
+                                        <p><span class="font-medium">Hak Kelas:</span> ${peserta?.hakKelas?.keterangan || '-'}</p>
+                                        <p><span class="font-medium">Status:</span> <span class="font-semibold">${peserta?.statusPeserta?.keterangan || '-'}</span></p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     `;

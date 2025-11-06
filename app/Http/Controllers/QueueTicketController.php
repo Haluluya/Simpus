@@ -149,6 +149,11 @@ class QueueTicketController extends Controller
         $queue->loadMissing('patient');
 
         if ($queue->visit_id) {
+            \Log::info("QueueTicket already has visit_id", [
+                'queue_ticket_id' => $queue->id,
+                'existing_visit_id' => $queue->visit_id,
+                'queue_number' => $queue->nomor_antrian
+            ]);
             return redirect()->route('visits.show', $queue->visit_id);
         }
 
@@ -174,6 +179,19 @@ class QueueTicketController extends Controller
                 throw new \RuntimeException('Failed to generate unique visit number after multiple attempts.');
             }
 
+            // Ambil dan simpan nomor antrian asli dari QueueTicket
+            $originalQueueNumber = $queue->nomor_antrian;
+            
+            \Log::info("QueueTicket Served", [
+                'queue_ticket_id' => $queue->id,
+                'original_queue_number' => $originalQueueNumber,
+                'patient_name' => $queue->patient?->name,
+                'department' => $queue->department,
+                'tanggal_antrian' => $queue->tanggal_antrian,
+                'user_id' => auth()->id()
+            ]);
+
+            // Pastikan nomor antrian dari QueueTicket tetap dipertahankan
             $visit = Visit::create([
                 'patient_id' => $queue->patient_id,
                 'provider_id' => $user?->id,
@@ -181,14 +199,36 @@ class QueueTicketController extends Controller
                 'visit_datetime' => now('Asia/Jakarta'),
                 'clinic_name' => $clinicName !== '' ? $clinicName : 'Poli',
                 'coverage_type' => $coverage,
-                'queue_number' => $queue->nomor_antrian,
+                'queue_number' => $originalQueueNumber,  // Paksa gunakan nomor antrian asli dari QueueTicket
                 'status' => 'ONGOING',
                 'meta' => [],
             ]);
 
+            // Update QueueTicket untuk menyambungkan ke Visit baru
             $queue->visit_id = $visit->id;
             $queue->status = QueueTicket::STATUS_CALLING;
             $queue->save();
+
+            \Log::info("Visit created from QueueTicket", [
+                'visit_id' => $visit->id,
+                'visit_number' => $visit->visit_number,
+                'queue_number' => $visit->queue_number,
+                'patient_id' => $visit->patient_id
+            ]);
+
+            // Tambahan pengecekan: pastikan nomor antrian di Visit sama dengan QueueTicket
+            if ($visit->queue_number !== $originalQueueNumber) {
+                // Jika terjadi ketidakcocokan, kita perbaiki kembali
+                $visit->queue_number = $originalQueueNumber;
+                $visit->save();
+                
+                \Log::warning("Visit queue_number corrected to match original QueueTicket number", [
+                    'visit_id' => $visit->id,
+                    'corrected_queue_number' => $visit->queue_number,
+                    'original_queue_number' => $originalQueueNumber,
+                    'queue_ticket_id' => $queue->id
+                ]);
+            }
 
             return $visit;
         });

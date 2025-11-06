@@ -130,8 +130,18 @@
                             <div class="text-[12px] text-[#6B7280] mb-1">Status BPJS</div>
                             <div class="text-[18px] font-bold text-[#0F172A]">{{ $patient->bpjs_card_no ?: '000123456789' }}</div>
                         </div>
-                        <span class="inline-flex items-center px-3 py-1 rounded-[6px] text-[12px] font-semibold bg-[#16A34A] text-white">
-                            Aktif
+                        @php
+                            $bpjsStatus = $patient->meta['bpjs_status'] ?? 'TIDAK DIKETAHUI';
+                            $badgeColor = match($bpjsStatus) {
+                                'AKTIF' => 'bg-[#16A34A]',
+                                'TIDAK AKTIF' => 'bg-red-600',
+                                default => 'bg-gray-500'
+                            };
+                        @endphp
+                        
+                        <span class="inline-flex items-center px-3 py-1 rounded-[6px] text-[12px] font-semibold {{ $badgeColor }} text-white"
+                              title="Status BPJS: {{ $bpjsStatus }}">
+                            {{ $bpjsStatus }}
                         </span>
                     </div>
                     
@@ -486,18 +496,23 @@
                     syncFailed: @js(__('Permintaan sinkron gagal dikirim.')),
                 };
 
+                // ⭐ Handle SEMUA tombol .bpjs-verify (tidak hanya yang di dalam form)
                 const bpjsForm = document.getElementById('bpjs-verify-form');
-                const bpjsButton = bpjsForm?.querySelector('.bpjs-verify');
-                if (bpjsForm && bpjsButton) {
+
+                document.querySelectorAll('.bpjs-verify').forEach((bpjsButton) => {
                     bpjsButton.addEventListener('click', async () => {
                         const statusTargetSelector = bpjsButton.dataset.target;
                         const statusTarget = statusTargetSelector ? document.querySelector(statusTargetSelector) : null;
-                        const serviceDateInput = bpjsForm.querySelector('input[name="service_date"]');
+
+                        // Get service date from form if exists, otherwise use today
+                        const serviceDateInput = bpjsForm?.querySelector('input[name="service_date"]');
                         const serviceDate = serviceDateInput?.value || new Date().toISOString().slice(0, 10);
+
                         const url = bpjsButton.dataset.url;
                         const nik = bpjsButton.dataset.nik;
 
                         if (!url || !nik || !statusTarget) {
+                            console.error('Missing required data:', { url, nik, statusTarget });
                             return;
                         }
 
@@ -518,26 +533,99 @@
 
                             const result = await response.json();
 
-                            if (result.success) {
-                                const peserta = result.data?.response?.peserta ?? {};
+                            if (result.success || result.metaData?.code === '200') {
+                                // Handle both success format and BPJS direct response
+                                const peserta = result.data?.response?.peserta ?? result.response?.peserta ?? {};
+                                const statusKeterangan = peserta.statusPeserta?.keterangan ?? '-';
+
+                                // Determine badge color and participant status text based on status
+                                let statusBadge = '';
+                                let participantStatusText = '';
+                                let mainBorderColor = '';
+                                let mainBgColor = '';
+                                
+                                if (statusKeterangan === 'AKTIF') {
+                                    statusBadge = `<span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-green-100 text-green-800">${statusKeterangan}</span>`;
+                                    participantStatusText = 'Peserta Aktif';
+                                    mainBorderColor = 'border-green-500';
+                                    mainBgColor = 'bg-green-50';
+                                } else if (statusKeterangan === 'TIDAK AKTIF') {
+                                    statusBadge = `<span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-red-100 text-red-800">${statusKeterangan}</span>`;
+                                    participantStatusText = 'Peserta Tidak Aktif';
+                                    mainBorderColor = 'border-red-500';
+                                    mainBgColor = 'bg-red-50';
+                                } else {
+                                    statusBadge = `<span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold bg-gray-100 text-gray-800">${statusKeterangan}</span>`;
+                                    participantStatusText = 'Status Tidak Diketahui';
+                                    mainBorderColor = 'border-gray-500';
+                                    mainBgColor = 'bg-gray-50';
+                                }
+
                                 statusTarget.innerHTML = `
-                                    <div class="mb-1 font-semibold text-slate-700">${labels.participantFound}</div>
-                                    <div>${labels.name}: ${peserta.nama ?? '-'}</div>
-                                    <div>${labels.card}: ${peserta.noKartu ?? '-'}</div>
-                                    <div>${labels.class}: ${peserta.hakKelas?.keterangan ?? '-'}</div>
-                                    <div>${labels.status}: ${peserta.statusPeserta?.keterangan ?? '-'}</div>
+                                    <div class="space-y-1.5 p-3 rounded-lg border ${mainBorderColor} ${mainBgColor}">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <div class="flex-shrink-0">
+                                                ${statusKeterangan === 'AKTIF' ? 
+                                                    '<svg class="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>' :
+                                                    statusKeterangan === 'TIDAK AKTIF' ?
+                                                    '<svg class="h-5 w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>' :
+                                                    '<svg class="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.125.99-.021 1.861.921 1.861 1.948v1.392m-1.392 8.118L19.5 7.5m0 0v-2.5m0 2.5h-15m15 0l-5.4 7.2H4.955a0.75 0.75 0 01-.75-0.75v-6.45a0.75 0.75 0 010.75-0.75h13.5a0.75 0.75 0 010.645.355z" /></svg>'
+                                                }
+                                            </div>
+                                            <h4 class="font-semibold ${statusKeterangan === 'AKTIF' ? 'text-green-800' : statusKeterangan === 'TIDAK AKTIF' ? 'text-red-800' : 'text-gray-800'}">
+                                                ${participantStatusText}
+                                            </h4>
+                                        </div>
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="text-gray-600">${labels.status}:</span>
+                                            ${statusBadge}
+                                        </div>
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="text-gray-600">${labels.name}:</span>
+                                            <span class="font-medium text-gray-900">${peserta.nama ?? '-'}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="text-gray-600">${labels.card}:</span>
+                                            <span class="font-medium text-gray-900">${peserta.noKartu ?? '-'}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-sm">
+                                            <span class="text-gray-600">${labels.class}:</span>
+                                            <span class="font-medium text-gray-900">${peserta.hakKelas?.keterangan ?? '-'}</span>
+                                        </div>
+                                        <div class="pt-2 border-t border-gray-200 text-xs text-gray-500">
+                                            Terverifikasi: ${new Date().toLocaleString('id-ID')}
+                                        </div>
+                                    </div>
                                 `;
+
+                                // Update patient's BPJS status in database
+                                try {
+                                    await fetch(`/patients/${patientId}/bpjs-status`, {
+                                        method: 'PUT',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                        },
+                                        body: JSON.stringify({
+                                            bpjs_status: statusKeterangan,
+                                            bpjs_class: peserta.hakKelas?.keterangan || '-'
+                                        })
+                                    });
+                                } catch (updateError) {
+                                    console.error('Error updating BPJS status in database:', updateError);
+                                }
                             } else {
                                 statusTarget.innerHTML = `<span class="font-semibold text-rose-600">${result.message ?? labels.participantError}</span>`;
                             }
                         } catch (error) {
+                            console.error('BPJS verification error:', error);
                             statusTarget.innerHTML = `<span class="font-semibold text-rose-600">${error.message ?? labels.participantError}</span>`;
                         } finally {
                             bpjsButton.disabled = false;
                             bpjsButton.classList.remove('opacity-60');
                         }
                     });
-                }
+                });
 
                 document.querySelectorAll('.satusehat-sync').forEach((button) => {
                     button.addEventListener('click', async () => {

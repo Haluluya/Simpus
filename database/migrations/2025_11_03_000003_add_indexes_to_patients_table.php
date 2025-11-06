@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('patients', function (Blueprint $table) {
-            // Index for name search (most common search field)
-            $table->index('name', 'idx_patients_name');
+            // Note: 'name', 'date_of_birth', 'gender' already indexed in create_patients_table migration
 
             // Index for NIK lookups (unique identifier)
             $table->index('nik', 'idx_patients_nik');
@@ -35,7 +34,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('patients', function (Blueprint $table) {
-            $table->dropIndex('idx_patients_name');
+            // Only drop indexes that we added in up()
             $table->dropIndex('idx_patients_nik');
             $table->dropIndex('idx_patients_bpjs');
             $table->dropIndex('idx_patients_mrn');

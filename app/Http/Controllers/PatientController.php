@@ -350,4 +350,38 @@ class PatientController extends Controller
         ]);
     }
 
+    /**
+     * Update BPJS status for a patient
+     */
+    public function updateBpjsStatus(Request $request, Patient $patient)
+    {
+        $request->validate([
+            'bpjs_status' => ['required', 'string', 'in:AKTIF,TIDAK AKTIF,TIDAK DIKETAHUI'],
+            'bpjs_class' => ['required', 'string'],
+        ]);
+
+        $patient->updateBpjsStatus($request->bpjs_status, $request->bpjs_class);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status BPJS berhasil diperbarui',
+        ]);
+    }
+
+    /**
+     * Update BPJS status via GET request for quick fix
+     */
+    public function updateBpjsStatusQuick(Request $request, Patient $patient)
+    {
+        $status = $request->get('status');
+        $kelas = $request->get('kelas', 'KELAS TIDAK BERLAKU');
+        
+        if (!in_array($status, ['AKTIF', 'TIDAK AKTIF', 'TIDAK DIKETAHUI'])) {
+            return response()->json(['success' => false, 'message' => 'Status tidak valid'], 400);
+        }
+
+        $patient->updateBpjsStatus($status, $kelas);
+
+        return redirect()->back()->with('status', "Status BPJS pasien {$patient->name} berhasil diperbarui ke {$status}");
+    }
 }

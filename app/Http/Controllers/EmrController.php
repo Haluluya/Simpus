@@ -25,6 +25,17 @@ class EmrController extends Controller
      */
     public function show(Visit $visit)
     {
+        // Check and ensure queue number consistency before loading EMR
+        $wasCorrected = $visit->ensureQueueNumberConsistency();
+        
+        if ($wasCorrected) {
+            \Log::info('Queue number corrected in EMR show', [
+                'visit_id' => $visit->id,
+                'queue_number' => $visit->queue_number,
+                'patient_name' => $visit->patient?->name
+            ]);
+        }
+        
         $visit->load([
             'patient',
             'provider',
@@ -32,6 +43,13 @@ class EmrController extends Controller
             'labOrders' => fn ($q) => $q->with('results')->latest(),
             'prescriptions' => fn ($q) => $q->with('items.medicine')->latest(),
             'referrals' => fn ($q) => $q->latest(),
+        ]);
+
+        // Log untuk melihat nomor antrian ketika RME dibuka
+        \Log::info("EMR Show - Visit loaded", [
+            'visit_id' => $visit->id,
+            'queue_number' => $visit->queue_number,
+            'patient_name' => $visit->patient?->name
         ]);
 
         $medicines = MasterMedicine::orderBy('nama_obat')->get();

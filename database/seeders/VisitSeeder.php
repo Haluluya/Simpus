@@ -17,6 +17,12 @@ class VisitSeeder extends Seeder
      */
     public function run(): void
     {
+        // Delete related data to avoid duplicates
+        \DB::table('lab_order_items')->delete();
+        \DB::table('lab_orders')->delete();
+        \DB::table('emr_notes')->delete();
+        Visit::query()->delete();
+
         $doctor = User::role('doctor')->first();
         $labUser = User::role('lab')->first();
 

@@ -61,12 +61,13 @@
                         <label for="clinic_name" class="text-xs font-semibold uppercase tracking-wide text-slate-500">
                             {{ __('Poli / Unit Pelayanan') }} <span class="text-danger">*</span>
                         </label>
-               <input id="clinic_name"
-                   type="text"
-                   name="clinic_name"
-                   value="{{ old('clinic_name', request('clinic_name', $patient?->meta['default_clinic'] ?? (auth()->user()?->department ?? ''))) }}"
-                   class="input"
-                   required>
+                        <select id="clinic_name" name="clinic_name" class="select" required>
+                            @foreach ($poliOptions as $poli)
+                                <option value="{{ $poli }}" @selected(old('clinic_name', $defaultClinic) == $poli)>
+                                    {{ $poli }}
+                                </option>
+                            @endforeach
+                        </select>
                         <x-input-error :messages="$errors->get('clinic_name')" class="mt-1" />
                     </div>
                 </div>
@@ -74,25 +75,31 @@
                 <div class="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
                     <div class="flex flex-col gap-2">
                         <label for="queue_number" class="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                            {{ __('Nomor Antrian') }}
+                            {{ __('Nomor Antrian (Otomatis)') }}
                         </label>
                         <input id="queue_number"
                                type="text"
                                name="queue_number"
                                value="{{ old('queue_number') }}"
-                               class="input uppercase"
-                               placeholder="{{ $nextQueueNumber }}">
+                               class="input uppercase bg-slate-50"
+                               placeholder="{{ $nextQueueNumber }}"
+                               readonly>
                         <p class="mt-1 text-xs text-slate-500">
-                            {{ __('Kosongkan untuk menggunakan nomor antrian otomatis.') }}
+                            <span class="inline-flex items-center gap-1">
+                                <svg class="h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                                </svg>
+                                Nomor antrian otomatis sesuai poli yang dipilih
+                            </span>
                         </p>
                         <x-input-error :messages="$errors->get('queue_number')" class="mt-1" />
                     </div>
                     <button type="button"
-                            id="queue-autofill"
-                            data-next="{{ $nextQueueNumber }}"
-                            class="btn btn-primary w-full md:w-auto">
+                            id="queue-preview"
+                            class="btn btn-ghost w-full md:w-auto border border-slate-300"
+                            disabled>
                         <x-icon.queue-list class="h-5 w-5" />
-                        <span>{{ __('Tambah ke Antrian') }}</span>
+                        <span id="queue-preview-text">{{ $nextQueueNumber }}</span>
                     </button>
                 </div>
 
@@ -176,17 +183,33 @@
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                const autofillButton = document.getElementById('queue-autofill');
+                const clinicSelect = document.getElementById('clinic_name');
                 const queueInput = document.getElementById('queue_number');
+                const queuePreviewText = document.getElementById('queue-preview-text');
 
-                if (autofillButton && queueInput) {
-                    autofillButton.addEventListener('click', () => {
-                        const next = autofillButton.dataset.next;
-                        if (next && !queueInput.value) {
-                            queueInput.value = next;
-                        }
-                        queueInput.focus();
+                // Queue number map dari backend
+                const queueNumberMap = @json($queueNumberMap);
+
+                // Update queue number preview saat poli berubah
+                if (clinicSelect && queueInput && queuePreviewText) {
+                    clinicSelect.addEventListener('change', () => {
+                        const selectedClinic = clinicSelect.value;
+                        const nextNumber = queueNumberMap[selectedClinic] || 'A001';
+
+                        // Update placeholder dan preview
+                        queueInput.placeholder = nextNumber;
+                        queuePreviewText.textContent = nextNumber;
+
+                        // Clear input value agar otomatis generate
+                        queueInput.value = '';
+
+                        console.log(`Poli: ${selectedClinic} → Next Queue: ${nextNumber}`);
                     });
+
+                    // Set initial preview
+                    const initialClinic = clinicSelect.value;
+                    const initialQueue = queueNumberMap[initialClinic] || queueInput.placeholder;
+                    queuePreviewText.textContent = initialQueue;
                 }
             });
         </script>

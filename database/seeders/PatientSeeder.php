@@ -14,6 +14,9 @@ class PatientSeeder extends Seeder
      */
     public function run(): void
     {
+        // Delete random patients (keep BPJS seeded patients with NIK prefix 1111)
+        Patient::where('nik', 'not like', '1111%')->delete();
+
         $userIds = User::pluck('id')->all();
 
         Patient::factory()

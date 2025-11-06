@@ -34,6 +34,25 @@ class BpjsController extends Controller
 
             $patient = Patient::where('nik', $validated['nik'])->first();
 
+            // Update patient's BPJS status if patient exists and response contains participant data
+            if ($patient && isset($response['response']['peserta'])) {
+                $peserta = $response['response']['peserta'];
+                $statusKeterangan = $peserta['statusPeserta']['keterangan'] ?? null;
+                $kelasKeterangan = $peserta['hakKelas']['keterangan'] ?? 'KELAS I';
+                
+                if ($statusKeterangan) {
+                    $patient->updateBpjsStatus($statusKeterangan, $kelasKeterangan);
+                    
+                    \Log::info('BPJS status updated via integration menu', [
+                        'patient_id' => $patient->id,
+                        'patient_name' => $patient->name,
+                        'bpjs_status' => $statusKeterangan,
+                        'bpjs_class' => $kelasKeterangan,
+                        'method' => 'by-nik'
+                    ]);
+                }
+            }
+
             $claim = BpjsClaim::create([
                 'patient_id' => $patient?->id,
                 'performed_by' => Auth::id(),
@@ -105,6 +124,25 @@ class BpjsController extends Controller
             $durationMs = (int) ((microtime(true) - $start) * 1000);
 
             $patient = Patient::where('bpjs_card_no', $validated['no_kartu'])->first();
+
+            // Update patient's BPJS status if patient exists and response contains participant data
+            if ($patient && isset($response['response']['peserta'])) {
+                $peserta = $response['response']['peserta'];
+                $statusKeterangan = $peserta['statusPeserta']['keterangan'] ?? null;
+                $kelasKeterangan = $peserta['hakKelas']['keterangan'] ?? 'KELAS I';
+                
+                if ($statusKeterangan) {
+                    $patient->updateBpjsStatus($statusKeterangan, $kelasKeterangan);
+                    
+                    \Log::info('BPJS status updated via integration menu', [
+                        'patient_id' => $patient->id,
+                        'patient_name' => $patient->name,
+                        'bpjs_status' => $statusKeterangan,
+                        'bpjs_class' => $kelasKeterangan,
+                        'method' => 'by-kartu'
+                    ]);
+                }
+            }
 
             BpjsClaim::create([
                 'patient_id' => $patient?->id,

@@ -88,4 +88,80 @@ class Visit extends Model
     {
         return $this->hasOne(QueueTicket::class, 'visit_id');
     }
+
+    /**
+     * Ensure queue number consistency with QueueTicket
+     */
+    public function ensureQueueNumberConsistency()
+    {
+        $queueTicket = $this->queueTicket;
+        
+        if ($queueTicket && $this->queue_number !== $queueTicket->nomor_antrian) {
+            $originalQueueNumber = $this->queue_number;
+            $correctQueueNumber = $queueTicket->nomor_antrian;
+            
+            \Log::info('Ensuring queue number consistency', [
+                'visit_id' => $this->id,
+                'original_queue_number' => $originalQueueNumber,
+                'correct_queue_number' => $correctQueueNumber,
+                'queue_ticket_id' => $queueTicket->id
+            ]);
+            
+            $this->queue_number = $correctQueueNumber;
+            $this->save();
+            
+            return true;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Boot the model and add event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Log when queue_number is being updated
+        static::updating(function ($visit) {
+            if ($visit->isDirty('queue_number')) {
+                \Log::info('Visit queue_number updated', [
+                    'visit_id' => $visit->id,
+                    'old_queue_number' => $visit->getOriginal('queue_number'),
+                    'new_queue_number' => $visit->queue_number,
+                    'updated_at' => now(),
+                    'updated_by' => auth()->id() ?? 'system',
+                    'trace' => collect(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 10))
+                        ->pluck('file', 'function')
+                        ->take(5)
+                        ->toArray()
+                ]);
+            }
+        });
+        
+        // Log when visit is created
+        static::creating(function ($visit) {
+            \Log::info('Visit creating', [
+                'patient_id' => $visit->patient_id,
+                'queue_number' => $visit->queue_number,
+                'creating_at' => now()
+            ]);
+        });
+        
+        // Log when visit is updated
+        static::updating(function ($visit) {
+            if ($visit->isDirty()) {
+                $dirtyFields = $visit->getDirty();
+                if (array_key_exists('queue_number', $dirtyFields)) {
+                    \Log::info('Visit queue_number specifically changed', [
+                        'visit_id' => $visit->id,
+                        'old_value' => $visit->getOriginal('queue_number'),
+                        'new_value' => $dirtyFields['queue_number'],
+                        'all_changes' => $dirtyFields
+                    ]);
+                }
+            }
+        });
+    }
 }

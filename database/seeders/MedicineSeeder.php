@@ -9,6 +9,9 @@ class MedicineSeeder extends Seeder
 {
     public function run(): void
     {
+        // Delete all records to avoid duplicates
+        Medicine::query()->delete();
+
         Medicine::factory()->count(12)->create();
     }
 }

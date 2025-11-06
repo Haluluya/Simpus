@@ -13,45 +13,33 @@ return new class extends Migration
     {
         // Visits Table Indexes
         Schema::table('visits', function (Blueprint $table) {
-            $table->index('visit_datetime', 'idx_visit_datetime');
+            // Note: visit_datetime, status, coverage_type already indexed in create migration
+            // Only add new indexes that don't exist yet
             $table->index('patient_id', 'idx_visits_patient');
-            $table->index('coverage_type', 'idx_coverage_type');
-            $table->index('status', 'idx_visits_status');
             $table->index('provider_id', 'idx_visits_provider');
             $table->index(['visit_datetime', 'coverage_type'], 'idx_datetime_coverage');
         });
 
         // Patients Table Indexes
-        Schema::table('patients', function (Blueprint $table) {
-            $table->index('name', 'idx_patients_name');
-            $table->index('medical_record_number', 'idx_mr_number');
-            $table->index('nik', 'idx_patients_nik');
-            $table->index('bpjs_card_no', 'idx_bpjs_card');
-            $table->index('created_at', 'idx_patients_created');
-        });
+        // Note: Indexes for patients are handled by 2025_11_03_000003_add_indexes_to_patients_table.php
+        // Skipping to avoid duplicate index errors
 
         // Queue Tickets Table Indexes
-        Schema::table('queue_tickets', function (Blueprint $table) {
-            $table->index('tanggal_antrian', 'idx_tanggal_antrian');
-            $table->index('status', 'idx_queue_status');
-            $table->index('patient_id', 'idx_queue_patient');
-            $table->index('nomor_antrian', 'idx_nomor_antrian');
-            $table->index(['tanggal_antrian', 'status'], 'idx_date_status');
-        });
+        // Note: Indexes for queue_tickets are handled by 2025_11_03_000002_add_indexes_to_queue_tickets_table.php
+        // Skipping to avoid duplicate index errors
 
         // BPJS Claims Table Indexes
         Schema::table('bpjs_claims', function (Blueprint $table) {
+            // Note: [interaction_type, endpoint] and performed_at already indexed in create migration
+            // Only add new indexes
             $table->index('patient_id', 'idx_bpjs_patient');
-            $table->index('performed_at', 'idx_bpjs_performed');
-            $table->index('interaction_type', 'idx_interaction_type');
             $table->index('status_code', 'idx_bpjs_status_code');
         });
 
         // Sync Queue Table Indexes
         Schema::table('sync_queue', function (Blueprint $table) {
-            $table->index(['entity_type', 'entity_id'], 'idx_entity_type_id');
-            $table->index(['target', 'status'], 'idx_target_status');
-            $table->index('available_at', 'idx_available_at');
+            // Note: [entity_type, entity_id], [target, status], and available_at already indexed in create migration
+            // Only add new indexes
             $table->index('last_synced_at', 'idx_last_synced');
         });
 
@@ -71,7 +59,7 @@ return new class extends Migration
             Schema::table('lab_orders', function (Blueprint $table) {
                 $table->index('visit_id', 'idx_lab_visit');
                 $table->index('status', 'idx_lab_status');
-                $table->index('ordered_at', 'idx_lab_ordered');
+                $table->index('requested_at', 'idx_lab_requested');
             });
         }
 
@@ -87,9 +75,10 @@ return new class extends Migration
         // Audit Logs Table Indexes
         if (Schema::hasTable('audit_logs')) {
             Schema::table('audit_logs', function (Blueprint $table) {
-                $table->index(['auditable_type', 'auditable_id'], 'idx_auditable');
+                // Note: entity_type + entity_id index already exists from create migration
+                // $table->index(['entity_type', 'entity_id'], 'idx_entity');
                 $table->index('user_id', 'idx_audit_user');
-                $table->index('event', 'idx_audit_event');
+                $table->index('action', 'idx_audit_action');
                 $table->index('created_at', 'idx_audit_created');
             });
         }
@@ -101,49 +90,34 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('visits', function (Blueprint $table) {
-            $table->dropIndex('idx_visit_datetime');
+            // Only drop indexes that we added in up()
             $table->dropIndex('idx_visits_patient');
-            $table->dropIndex('idx_coverage_type');
-            $table->dropIndex('idx_visits_status');
             $table->dropIndex('idx_visits_provider');
             $table->dropIndex('idx_datetime_coverage');
         });
 
-        Schema::table('patients', function (Blueprint $table) {
-            $table->dropIndex('idx_patients_name');
-            $table->dropIndex('idx_mr_number');
-            $table->dropIndex('idx_patients_nik');
-            $table->dropIndex('idx_bpjs_card');
-            $table->dropIndex('idx_patients_created');
-        });
+        // Patients indexes are handled by dedicated migration
+        // No need to drop here
 
-        Schema::table('queue_tickets', function (Blueprint $table) {
-            $table->dropIndex('idx_tanggal_antrian');
-            $table->dropIndex('idx_queue_status');
-            $table->dropIndex('idx_queue_patient');
-            $table->dropIndex('idx_nomor_antrian');
-            $table->dropIndex('idx_date_status');
-        });
+        // Queue Tickets indexes are handled by dedicated migration
+        // No need to drop here
 
         Schema::table('bpjs_claims', function (Blueprint $table) {
+            // Only drop indexes that we added in up()
             $table->dropIndex('idx_bpjs_patient');
-            $table->dropIndex('idx_bpjs_performed');
-            $table->dropIndex('idx_interaction_type');
             $table->dropIndex('idx_bpjs_status_code');
         });
 
         Schema::table('sync_queue', function (Blueprint $table) {
-            $table->dropIndex('idx_entity_type_id');
-            $table->dropIndex('idx_target_status');
-            $table->dropIndex('idx_available_at');
+            // Only drop indexes that we added in up()
             $table->dropIndex('idx_last_synced');
         });
 
         if (Schema::hasTable('medicines')) {
             Schema::table('medicines', function (Blueprint $table) {
-                $table->dropIndex('idx_medicines_name');
+                $table->dropIndex('idx_medicines_nama');
                 $table->dropIndex('idx_stok_minimal');
-                $table->dropIndex('idx_stok_tersedia');
+                $table->dropIndex('idx_stok');
             });
         }
 
@@ -151,7 +125,7 @@ return new class extends Migration
             Schema::table('lab_orders', function (Blueprint $table) {
                 $table->dropIndex('idx_lab_visit');
                 $table->dropIndex('idx_lab_status');
-                $table->dropIndex('idx_lab_ordered');
+                $table->dropIndex('idx_lab_requested');
             });
         }
 
@@ -165,9 +139,9 @@ return new class extends Migration
 
         if (Schema::hasTable('audit_logs')) {
             Schema::table('audit_logs', function (Blueprint $table) {
-                $table->dropIndex('idx_auditable');
+                // $table->dropIndex('idx_entity');
                 $table->dropIndex('idx_audit_user');
-                $table->dropIndex('idx_audit_event');
+                $table->dropIndex('idx_audit_action');
                 $table->dropIndex('idx_audit_created');
             });
         }

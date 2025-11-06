@@ -20,11 +20,21 @@ class PatientFactory extends Factory
         $gender = $faker->randomElement(['male', 'female']);
         $bloodTypes = ['A', 'B', 'AB', 'O'];
 
+        // Generate NIK 16 digit dan BPJS 13 digit
+        $nik = $faker->unique()->numerify('################');
+        $bpjs = $faker->unique()->numerify('#############');
+
+        // Randomly assign BPJS status (10% chance inactive)
+        $isInactive = $faker->boolean(10);
+        $bpjsStatus = $isInactive ? 'TIDAK AKTIF' : 'AKTIF';
+        $bpjsClass = $isInactive ? 'KELAS TIDAK BERLAKU' : $faker->randomElement(['KELAS I', 'KELAS II', 'KELAS III']);
+        $participantType = $faker->randomElement(['PNS', 'PPU', 'PBPU']);
+
         return [
             'medical_record_number' => 'RM'.$faker->unique()->numerify('#####'),
-            'nik' => $faker->unique()->numerify('################'),
-            'bpjs_card_no' => $faker->boolean(60) ? $faker->unique()->numerify('##############') : null,
-            'name' => $faker->name(),
+            'nik' => $nik,
+            'bpjs_card_no' => $faker->boolean(90) ? $bpjs : null, // 90% have BPJS
+            'name' => strtoupper($faker->name()),
             'date_of_birth' => $faker->dateTimeBetween('-80 years', '-1 years'),
             'gender' => $gender,
             'blood_type' => $faker->boolean(50) ? $faker->randomElement($bloodTypes) : null,
@@ -44,6 +54,9 @@ class PatientFactory extends Factory
             'meta' => [
                 'marital_status' => $faker->randomElement(['single', 'married', 'widowed']),
                 'education' => $faker->randomElement(['SMA', 'D3', 'S1', 'S2']),
+                'bpjs_status' => $bpjsStatus,
+                'bpjs_class' => $bpjsClass,
+                'participant_type' => $participantType,
             ],
             'created_by' => null,
             'updated_by' => null,
